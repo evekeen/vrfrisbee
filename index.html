@@ -111,7 +111,7 @@
     createParticles(scene);
 
     var assetsManager = new BABYLON.AssetsManager(scene);
-    const task = assetsManager.addMeshTask("task2", "", "/ultimate_frisbee/", "scene.gltf");
+    const task = assetsManager.addMeshTask("task2", "", "ultimate_frisbee/", "scene.gltf");
     task.onSuccess = task => {
       const frisbee = task.loadedMeshes[0];
       frisbee.position = new BABYLON.Vector3(1, 1, 2);
@@ -195,11 +195,11 @@
     engine.resize();
   });
 
-  scenePromise.then(scene => {
-    scene.debugLayer.show({
-      overlay: false
-    });
-  });
+  // scenePromise.then(scene => {
+  //   scene.debugLayer.show({
+  //     overlay: false
+  //   });
+  // });
 </script>
 
 </body>

@@ -26,11 +26,11 @@
         }
     </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/4.2.0-alpha.26/babylon.max.js"></script>
+    <script src="https://preview.babylonjs.com/babylon.max.js"></script>
     <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
-    <!--    <script src=https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js></script>-->
+        <script src=https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js></script>
 </head>
 
 <body>
@@ -40,8 +40,6 @@
 <script type="module">
   var canvas = document.getElementById("renderCanvas"); // Get the canvas element
   var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
-
-  // import WebXRPolyfill from 'https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.module.js';
 
   // let polyfill = new WebXRPolyfill();
   if (!navigator.xr) {
@@ -83,51 +81,23 @@
       }
     });
 
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 0, -10), scene);
-    camera.setTarget(BABYLON.Vector3.Zero());
-    camera.attachControl(canvas, true);
+      var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 0, 0), scene);
+      camera.setTarget(new BABYLON.Vector3(0, 0, 10));
+      camera.attachControl(canvas, true);
 
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = 0.7;
 
-    // var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-    // sphere.position.x = 0;
-    // sphere.position.y = 0;
-    // sphere.position.z = 10;
-
-    BABYLON.SceneLoader.Append("/ultimate_frisbee/", "scene.gltf", scene, function (results) {
-      var frisbee = results.meshes[0];
-      // frisbee.createDefaultCameraOrLight(true, true, true);
-      // frisbee.activeCamera.alpha += Math.PI;
-
-      // frisbee.rotation.y = 270;
-      frisbee.position = new BABYLON.Vector3(0, 0, 20);
+    var assetsManager = new BABYLON.AssetsManager(scene);
+    const task = assetsManager.addMeshTask("task2", "", "/ultimate_frisbee/", "scene.gltf");
+    task.onSuccess = task => {
+      const frisbee = task.loadedMeshes[0];
+      frisbee.position = new BABYLON.Vector3(0, 0, 5);
       frisbee.scaling.x = 0.0001;
       frisbee.scaling.y = 0.0001;
       frisbee.scaling.z = 0.0001;
-
-
-      // try {
-      //
-      //   let translateAnim = new BABYLON.Animation("translate", "position.z", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-      //   translateAnim.setKeys([
-      //     {frame: 0, value: 10},
-      //     {frame: 100, value: -50}
-      //   ]);
-      //   let frameRate = 20;
-      //   let yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-      //   yRot.setKeys([
-      //     {frame: 0, value: 0},
-      //     {frame: frameRate, value: Math.PI},
-      //     {frame: frameRate * 2, value: 2 * Math.PI}
-      //   ]);
-      //   frisbee.animations = [yRot];
-      //   // scene.beginDirectAnimation(frisbee, [yRot], 0, 20, true);
-      //   scene.beginAnimation(frisbee, 0, 100, true);
-      // } catch (e) {
-      //   console.log(e);
-      // }
-    });
+    }
+    assetsManager.load();
 
     return scene;
   };
@@ -143,10 +113,11 @@
     engine.resize();
   });
 
-
-  // scene.debugLayer.show({
-  //   overlay: false
-  // });
+  scenePromise.then(scene => {
+    scene.debugLayer.show({
+      overlay: false
+    });
+  });
 </script>
 
 </body>

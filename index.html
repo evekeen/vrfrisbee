@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+
+    <title>Babylon XR Test</title>
+
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/4.2.0-alpha.26/babylon.max.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+    <!--    <script src=https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js></script>-->
+</head>
+
+<body>
+
+<canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+<script type="module">
+  var canvas = document.getElementById("renderCanvas"); // Get the canvas element
+  var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+  // import WebXRPolyfill from 'https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.module.js';
+
+  // let polyfill = new WebXRPolyfill();
+  if (!navigator.xr) {
+    alert('no xr');
+    throw Error('not supported');
+  }
+
+  var createScene = async function () {
+
+    // Create scene
+    var scene = new BABYLON.Scene(engine);
+    var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
+    env.setMainColor(BABYLON.Color3.FromHexString("#74b9ff"))
+
+    // here we add XR support
+    const xr = await scene.createDefaultXRExperienceAsync({
+      floorMeshes: [env.ground],
+      uiOptions: {
+        sessionMode: 'immersive-vr'
+      }
+    });
+    if (!xr.baseExperience) {
+      alert("No XR support");
+    } else {
+      console.log("XR supported");
+    }
+
+    const webXRInput = xr.input; // if using the experience helper, otherwise, an instance of WebXRInput
+    webXRInput.onControllerAddedObservable.add((xrController /* WebXRInputSource instance */) => {
+      // more fun with the new controller, since we are in XR!
+      console.log(xrController);
+      xrController.onMotionControllerInitObservable.add((motionController) => {
+        // get the motionController, which is similar to but NOT a gamepad:
+        console.log(motionController);
+      });
+      // xr supports all types of inputs, so some won't have a motion controller
+      if (!xrController.gamepad) {
+        // using touch, hands, gaze, something else?
+      }
+    });
+
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 0, -10), scene);
+    camera.setTarget(BABYLON.Vector3.Zero());
+    camera.attachControl(canvas, true);
+
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    light.intensity = 0.7;
+
+    // var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+    // sphere.position.x = 0;
+    // sphere.position.y = 0;
+    // sphere.position.z = 10;
+
+    BABYLON.SceneLoader.Append("/ultimate_frisbee/", "scene.gltf", scene, function (results) {
+      var frisbee = results.meshes[0];
+      // frisbee.createDefaultCameraOrLight(true, true, true);
+      // frisbee.activeCamera.alpha += Math.PI;
+
+      // frisbee.rotation.y = 270;
+      frisbee.position = new BABYLON.Vector3(0, 0, 20);
+      frisbee.scaling.x = 0.0001;
+      frisbee.scaling.y = 0.0001;
+      frisbee.scaling.z = 0.0001;
+
+
+      // try {
+      //
+      //   let translateAnim = new BABYLON.Animation("translate", "position.z", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+      //   translateAnim.setKeys([
+      //     {frame: 0, value: 10},
+      //     {frame: 100, value: -50}
+      //   ]);
+      //   let frameRate = 20;
+      //   let yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+      //   yRot.setKeys([
+      //     {frame: 0, value: 0},
+      //     {frame: frameRate, value: Math.PI},
+      //     {frame: frameRate * 2, value: 2 * Math.PI}
+      //   ]);
+      //   frisbee.animations = [yRot];
+      //   // scene.beginDirectAnimation(frisbee, [yRot], 0, 20, true);
+      //   scene.beginAnimation(frisbee, 0, 100, true);
+      // } catch (e) {
+      //   console.log(e);
+      // }
+    });
+
+    return scene;
+  };
+
+  var scenePromise = createScene(); //Call the createScene function
+
+  engine.runRenderLoop(async function () {
+    const scene = await scenePromise;
+    scene.render();
+  });
+
+  window.addEventListener("resize", function () {
+    engine.resize();
+  });
+
+
+  // scene.debugLayer.show({
+  //   overlay: false
+  // });
+</script>
+
+</body>
+
+</html>

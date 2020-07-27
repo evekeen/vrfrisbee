@@ -30,7 +30,7 @@
     <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
-        <script src=https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js></script>
+    <script src=https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js></script>
 </head>
 
 <body>
@@ -51,12 +51,30 @@
 
     // Create scene
     var scene = new BABYLON.Scene(engine);
-    var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
-    env.setMainColor(BABYLON.Color3.FromHexString("#74b9ff"))
+    // var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
+    // env.setMainColor(BABYLON.Color3.FromHexString("#74b9ff"))
+
+    //Ground
+    var ground = BABYLON.Mesh.CreatePlane("ground", 500.0, scene);
+    ground.position = new BABYLON.Vector3(0, 0, 0);
+    ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
+
+    var groundMat = new BABYLON.PBRMetallicRoughnessMaterial("groundMat", scene);
+    groundMat.baseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_basecolor.png", scene);
+    groundMat.normalTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_normal.png", scene);
+    groundMat.metallicRoughnessTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_metalRough.png", scene);
+    groundMat.baseTexture.uScale = 40.0;
+    groundMat.baseTexture.vScale = 40.0;
+    groundMat.normalTexture.uScale = 40.0;
+    groundMat.normalTexture.vScale = 40.0;
+    groundMat.metallicRoughnessTexture.uScale = 40.0;
+    groundMat.metallicRoughnessTexture.vScale = 40.0;
+    ground.material = groundMat;
+    ground.material.backFaceCulling = false;
 
     // here we add XR support
     const xr = await scene.createDefaultXRExperienceAsync({
-      floorMeshes: [env.ground],
+      floorMeshes: [ground],
       uiOptions: {
         sessionMode: 'immersive-vr'
       }
@@ -81,26 +99,90 @@
       }
     });
 
-      var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 0, 0), scene);
-      camera.setTarget(new BABYLON.Vector3(0, 0, 10));
-      camera.attachControl(canvas, true);
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 0, -100), scene);
+    camera.setTarget(new BABYLON.Vector3(0, 0, -1000));
+    camera.attachControl(canvas, true);
 
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = 0.7;
+
+    const frameRate = 30;
+
+    createParticles(scene);
 
     var assetsManager = new BABYLON.AssetsManager(scene);
     const task = assetsManager.addMeshTask("task2", "", "/ultimate_frisbee/", "scene.gltf");
     task.onSuccess = task => {
       const frisbee = task.loadedMeshes[0];
-      frisbee.position = new BABYLON.Vector3(0, 0, 5);
-      frisbee.scaling.x = 0.0001;
-      frisbee.scaling.y = 0.0001;
-      frisbee.scaling.z = 0.0001;
+      frisbee.position = new BABYLON.Vector3(1, 1, 2);
+      frisbee.rotation = new BABYLON.Vector3(0, 0, 0);
+      frisbee.scaling = new BABYLON.Vector3(0.0001, 0.0001, 0.0001);
+
+      try {
+        const xSlide = new BABYLON.Animation("translate", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        xSlide.setKeys([
+          {frame: 0, value: 2},
+          {frame: 2 * frameRate, value: 50}
+        ]);
+        const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        yRot.setKeys([
+          {frame: 0, value: 0},
+          {frame: frameRate, value: Math.PI},
+          {frame: frameRate * 2, value: Math.PI * 2}
+        ]);
+        scene.beginDirectAnimation(frisbee, [xSlide, yRot], 0, 2 * frameRate, true);
+
+        createParticles(scene, frisbee);
+      } catch (e) {
+        console.log(e);
+      }
     }
     assetsManager.load();
 
     return scene;
   };
+
+  function createParticles(scene, emitter) {
+    var particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
+    particleSystem.emitter = emitter;
+    particleSystem.particleTexture = new BABYLON.Texture("flare.png", scene);
+
+    particleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);
+    particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
+    particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
+
+    particleSystem.minSize = 0.2;
+    particleSystem.maxSize = 0.5;
+
+    // Life time of each particle (random between...
+    particleSystem.minLifeTime = 0.3;
+    particleSystem.maxLifeTime = 0.5;
+
+    // Emission rate
+    particleSystem.emitRate = 1500;
+
+    // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+    particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+    // Set the gravity of all particles
+    particleSystem.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+    // Direction of each particle after it has been emitted
+    particleSystem.direction1 = new BABYLON.Vector3(-7, 8, 3);
+    particleSystem.direction2 = new BABYLON.Vector3(7, 8, -3);
+
+    // Angular speed, in radians
+    particleSystem.minAngularSpeed = 0;
+    particleSystem.maxAngularSpeed = Math.PI;
+
+    // Speed
+    particleSystem.minEmitPower = 1;
+    particleSystem.maxEmitPower = 3;
+    particleSystem.updateSpeed = 0.005;
+
+    // Start the particle system
+    particleSystem.start();
+  }
 
   var scenePromise = createScene(); //Call the createScene function
 

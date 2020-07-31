@@ -52,25 +52,7 @@
     // Create scene
     var scene = new BABYLON.Scene(engine);
     // var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
-    // env.setMainColor(BABYLON.Color3.FromHexString("#74b9ff"))
-
-    //Ground
-    // var ground = BABYLON.Mesh.CreatePlane("ground", 500.0, scene);
-    // ground.position = new BABYLON.Vector3(0, 0, 0);
-    // ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
-
-    // var groundMat = new BABYLON.PBRMetallicRoughnessMaterial("groundMat", scene);
-    // groundMat.baseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_basecolor.png", scene);
-    // groundMat.normalTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_normal.png", scene);
-    // groundMat.metallicRoughnessTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_metalRough.png", scene);
-    // groundMat.baseTexture.uScale = 40.0;
-    // groundMat.baseTexture.vScale = 40.0;
-    // groundMat.normalTexture.uScale = 40.0;
-    // groundMat.normalTexture.vScale = 40.0;
-    // groundMat.metallicRoughnessTexture.uScale = 40.0;
-    // groundMat.metallicRoughnessTexture.vScale = 40.0;
-    // ground.material = groundMat;
-    // ground.material.backFaceCulling = false;
+    // env.setMainColor(BABYLON.Color3.FromHexString("#010002"))
 
     // here we add XR support
     const xr = await scene.createDefaultXRExperienceAsync({
@@ -103,8 +85,8 @@
     camera.setTarget(new BABYLON.Vector3(0, 0, -1000));
     camera.attachControl(canvas, true);
 
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-    light.intensity = 0.7;
+    // var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    // light.intensity = 0.7;
 
     const frameRate = 30;
 
@@ -123,6 +105,13 @@
       frisbee.position = new BABYLON.Vector3(1, 1, 2);
       frisbee.rotation = new BABYLON.Vector3(0, 0, 0);
       frisbee.scaling = new BABYLON.Vector3(0.0001, 0.0001, 0.0001);
+
+      const material = new BABYLON.StandardMaterial("frisbee", scene);
+      material.diffuseColor = new BABYLON.Color3(0, 0, 0);
+      material.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+      material.emissiveColor = new BABYLON.Color3(1, 0, 1);
+      material.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+      frisbee.getChildMeshes(false, c => c.id === 'TARELKA_Mat.1_0')[0].material = material;
 
       try {
         const xSlide = new BABYLON.Animation("translate", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
@@ -201,11 +190,11 @@
     engine.resize();
   });
 
-  // scenePromise.then(scene => {
-  //   scene.debugLayer.show({
-  //     overlay: false
-  //   });
-  // });
+  scenePromise.then(scene => {
+    scene.debugLayer.show({
+      overlay: false
+    });
+  });
 </script>
 
 </body>

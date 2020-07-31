@@ -55,26 +55,26 @@
     // env.setMainColor(BABYLON.Color3.FromHexString("#74b9ff"))
 
     //Ground
-    var ground = BABYLON.Mesh.CreatePlane("ground", 500.0, scene);
-    ground.position = new BABYLON.Vector3(0, 0, 0);
-    ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
+    // var ground = BABYLON.Mesh.CreatePlane("ground", 500.0, scene);
+    // ground.position = new BABYLON.Vector3(0, 0, 0);
+    // ground.rotation = new BABYLON.Vector3(Math.PI / 2, 0, 0);
 
-    var groundMat = new BABYLON.PBRMetallicRoughnessMaterial("groundMat", scene);
-    groundMat.baseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_basecolor.png", scene);
-    groundMat.normalTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_normal.png", scene);
-    groundMat.metallicRoughnessTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_metalRough.png", scene);
-    groundMat.baseTexture.uScale = 40.0;
-    groundMat.baseTexture.vScale = 40.0;
-    groundMat.normalTexture.uScale = 40.0;
-    groundMat.normalTexture.vScale = 40.0;
-    groundMat.metallicRoughnessTexture.uScale = 40.0;
-    groundMat.metallicRoughnessTexture.vScale = 40.0;
-    ground.material = groundMat;
-    ground.material.backFaceCulling = false;
+    // var groundMat = new BABYLON.PBRMetallicRoughnessMaterial("groundMat", scene);
+    // groundMat.baseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_basecolor.png", scene);
+    // groundMat.normalTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_normal.png", scene);
+    // groundMat.metallicRoughnessTexture = new BABYLON.Texture("https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Explosion/Ground/rockyGround_metalRough.png", scene);
+    // groundMat.baseTexture.uScale = 40.0;
+    // groundMat.baseTexture.vScale = 40.0;
+    // groundMat.normalTexture.uScale = 40.0;
+    // groundMat.normalTexture.vScale = 40.0;
+    // groundMat.metallicRoughnessTexture.uScale = 40.0;
+    // groundMat.metallicRoughnessTexture.vScale = 40.0;
+    // ground.material = groundMat;
+    // ground.material.backFaceCulling = false;
 
     // here we add XR support
     const xr = await scene.createDefaultXRExperienceAsync({
-      floorMeshes: [ground],
+      // floorMeshes: [ground],
       uiOptions: {
         sessionMode: 'immersive-vr'
       }
@@ -111,6 +111,12 @@
     createParticles(scene);
 
     var assetsManager = new BABYLON.AssetsManager(scene);
+    const landscapeTask = assetsManager.addMeshTask("landscape", "", "barcelona/", "scene.gltf");
+    landscapeTask.onSuccess = task => {
+      const landscape = task.loadedMeshes[0];
+      landscape.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0);
+    };
+
     const task = assetsManager.addMeshTask("task2", "", "ultimate_frisbee/", "scene.gltf");
     task.onSuccess = task => {
       const frisbee = task.loadedMeshes[0];

@@ -89,8 +89,16 @@
     // light.intensity = 0.7;
 
     const frameRate = 30;
+    const originalMaxTime = 3;
+    const playbackSpeed = 0.5;
+    const distanceConversion = 10;
+    const discretization = 10;
 
-    createParticles(scene);
+    function toFrames(points) {
+      return points.map((p, i) => ({frame: i * frameRate / discretization / playbackSpeed, value: p * distanceConversion}));
+    }
+
+    // createParticles(scene);
 
     var assetsManager = new BABYLON.AssetsManager(scene);
     const landscapeTask = assetsManager.addMeshTask("landscape", "", "barcelona/", "scene.gltf");
@@ -114,18 +122,23 @@
       frisbee.getChildMeshes(false, c => c.id === 'TARELKA_Mat.1_0')[0].material = material;
 
       try {
-        const xSlide = new BABYLON.Animation("translate", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        xSlide.setKeys([
-          {frame: 0, value: 2},
-          {frame: 2 * frameRate, value: 50}
-        ]);
+        const velocityCorrection = 1
+        const xSlide = new BABYLON.Animation("translate", "position.x", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const ySlide = new BABYLON.Animation("translate", "position.y", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const zSlide = new BABYLON.Animation("translate", "position.z", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const x = [0.00,-0.00,-0.01,-0.03,-0.05,-0.09,-0.13,-0.18,-0.25,-0.34,-0.45,-0.59,-0.75,-0.95,-1.19,-1.47,-1.80,-2.17,-2.59,-3.06,-3.57,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92];
+        const y = [1.00,0.99,0.97,0.96,0.97,1.00,1.05,1.10,1.17,1.23,1.28,1.33,1.36,1.36,1.33,1.27,1.17,1.02,0.82,0.56,0.24,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00];
+        const z = [0.00,1.05,2.07,3.05,4.00,4.91,5.78,6.61,7.40,8.15,8.87,9.54,10.18,10.78,11.35,11.87,12.35,12.79,13.17,13.49,13.74,13.85,13.85,13.85,13.85,13.85,13.85,13.85];
+        xSlide.setKeys(toFrames(x));
+        ySlide.setKeys(toFrames(y));
+        zSlide.setKeys(toFrames(z));
         const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         yRot.setKeys([
           {frame: 0, value: 0},
           {frame: frameRate, value: Math.PI},
           {frame: frameRate * 2, value: Math.PI * 2}
         ]);
-        scene.beginDirectAnimation(frisbee, [xSlide, yRot], 0, 2 * frameRate, true);
+        scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, yRot], 0, (originalMaxTime -1) / playbackSpeed * frameRate, true);
 
         createParticles(scene, frisbee);
       } catch (e) {
@@ -190,11 +203,11 @@
     engine.resize();
   });
 
-  scenePromise.then(scene => {
-    scene.debugLayer.show({
-      overlay: false
-    });
-  });
+  // scenePromise.then(scene => {
+  //   scene.debugLayer.show({
+  //     overlay: false
+  //   });
+  // });
 </script>
 
 </body>

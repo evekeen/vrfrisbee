@@ -143,11 +143,11 @@ export const createScene = async function (engine, canvas) {
               pressed = true;
               if (frisbee) {
                 frisbee.setEnabled(true);
-                frisbee.position = ray.origin;
+                frisbee.position = ray.origin.clone();
               }
             } else {
               pressed = false;
-              frisbee && throwFrisbee(scene, frisbee);
+              frisbee && throwFrisbee(scene, frisbee, ray);
             }
           }
         })
@@ -156,7 +156,7 @@ export const createScene = async function (engine, canvas) {
       const frameObserver = xr.baseExperience.sessionManager.onXRFrameObservable.add(() => {
         controller.getWorldPointerRayToRef(ray, true);
         if (frisbee && pressed) {
-          frisbee.position = ray.origin;
+          frisbee.position = ray.origin.clone();
         }
       });
 
@@ -184,7 +184,7 @@ function toRotationFrames(points) {
   }));
 }
 
-function throwFrisbee(scene, frisbee) {
+function throwFrisbee(scene, frisbee, ray) {
   const velocityCorrection = 1
   const xSlide = new BABYLON.Animation("translateX", "position.x", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const ySlide = new BABYLON.Animation("translateY", "position.y", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -192,9 +192,12 @@ function throwFrisbee(scene, frisbee) {
   const xRot = new BABYLON.Animation("xRot", "rotation.x", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zRot = new BABYLON.Animation("zRot", "rotation.z", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  xSlide.setKeys(toPositionFrames(x));
-  ySlide.setKeys(toPositionFrames(y, heightBias));
-  zSlide.setKeys(toPositionFrames(z));
+  const xTranslated = x.map(p => p + ray.origin.x);
+  const yTranslated = y.map(p => p + ray.origin.y - 1);
+  const zTranslated = z.map(p => p + ray.origin.z);
+  xSlide.setKeys(toPositionFrames(xTranslated));
+  ySlide.setKeys(toPositionFrames(yTranslated));
+  zSlide.setKeys(toPositionFrames(zTranslated));
   xRot.setKeys(toRotationFrames(alpha_x));
   yRot.setKeys(toRotationFrames(alpha_y));
   zRot.setKeys(toRotationFrames(alpha_z));

@@ -79,12 +79,19 @@ export const createScene = async function (engine, canvas) {
   fMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
   fMaterial.alpha = 0.8;
 
-  const pMaterial = new BABYLON.StandardMaterial("frisbee", scene);
+  const pMaterial = new BABYLON.StandardMaterial("pineapple", scene);
   pMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1);
   pMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
   pMaterial.emissiveColor = new BABYLON.Color3(0, 0, 0);
   pMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
-  pMaterial.alpha = 0.5;
+  pMaterial.alpha = 0.9;
+
+  const pMaterialExplosion = new BABYLON.StandardMaterial("pineapple-explosion", scene);
+  pMaterialExplosion.diffuseColor = new BABYLON.Color3(1, 0, 0);
+  pMaterialExplosion.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+  pMaterialExplosion.emissiveColor = new BABYLON.Color3(0, 0, 0);
+  pMaterialExplosion.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+  pMaterialExplosion.alpha = 0.5;
 
   const assetsManager = new BABYLON.AssetsManager(scene);
   const landscapeTask = assetsManager.addMeshTask("landscape", "", "/barcelona/", "scene.gltf");
@@ -149,38 +156,24 @@ export const createScene = async function (engine, canvas) {
   // createFogParticles(scene);
 
   let collision = false;
-
-  var pipeline = new BABYLON.DefaultRenderingPipeline("default", true, scene);
-  scene.imageProcessingConfiguration.toneMappingEnabled = true;
-  scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
-  scene.imageProcessingConfiguration.exposure = 1;
-  pipeline.bloomEnabled = true;
-  pipeline.bloomThreshold = 0.8;
-  pipeline.bloomWeight = 0.3;
-  pipeline.bloomKernel = 64;
-  pipeline.bloomScale = 0.5;
+  const collisionFrames = frameRate * 3;
+  let collisionFrame = 0;
 
   scene.registerBeforeRender(() => {
     if (!frisbee || !pineapple) return;
     if (frisbee.intersectsMesh(pineapple, false)) {
       if (!collision) {
         collision = true;
-        BABYLON.ParticleHelper.CreateAsync("explosion", scene).then((particles) => {
-          particles.systems.forEach(s => {
-            s.disposeOnStop = true;
-            s.emitter = pineapple;
-            // s.minSize *= 0.1;
-            // s.maxSize *= 0.1;
-            // s.minEmitPower *= 0.1;
-            // s.maxEmitPower *= 0.1;
-          });
-          particles.start();
-          pineapple.visible = false;
-        });
+        collisionFrame = 0;
+        pineapple.material = pMaterialExplosion;
+        const scaling = 1.5;
+        pineapple.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
       }
-    } else {
+    }
+    if (collision && collisionFrame++ > collisionFrames) {
       collision = false;
-      pineapple.visible = true;
+      pineapple.material = pMaterial;
+      pineapple.scaling = new BABYLON.Vector3(1, 1, 1);
     }
   });
 

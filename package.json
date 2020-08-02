@@ -1,0 +1,30 @@
+{
+  "name": "babylon-test",
+  "description": "Babylon test",
+  "version": "0.3.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack-dev-server",
+    "deploy": "ghpages",
+    "ghpages": "ghpages"
+  },
+  "devDependencies": {
+    "@babylonjs/core": "4.1.0",
+    "@babylonjs/materials": "4.1.0",
+    "budo": "11.6.4",
+    "ghpages": "0.0.10",
+    "gltf-webpack-loader": "1.0.6",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "keywords": [
+    "webvr",
+    "vr"
+  ],
+  "dependencies": {
+    "babylonjs": "4.1.0",
+    "babylonjs-loaders": "4.1.0"
+  }
+}

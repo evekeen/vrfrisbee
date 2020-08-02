@@ -93,9 +93,28 @@
     const playbackSpeed = 0.5;
     const distanceConversion = 10;
     const discretization = 10;
+    const heightBias = -1 * discretization;
 
-    function toFrames(points) {
-      return points.map((p, i) => ({frame: i * frameRate / discretization / playbackSpeed, value: p * distanceConversion}));
+    const x = [0.00,-0.00,-0.01,-0.03,-0.05,-0.09,-0.13,-0.18,-0.25,-0.34,-0.45,-0.59,-0.75,-0.95,-1.19,-1.47,-1.80,-2.17,-2.59,-3.06,-3.57,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92];
+    const y = [1.00,0.99,0.97,0.96,0.97,1.00,1.05,1.10,1.17,1.23,1.28,1.33,1.36,1.36,1.33,1.27,1.17,1.02,0.82,0.56,0.24,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00];
+    const z = [0.00,1.05,2.07,3.05,4.00,4.91,5.78,6.61,7.40,8.15,8.87,9.54,10.18,10.78,11.35,11.87,12.35,12.79,13.17,13.49,13.74,13.85,13.85,13.85,13.85,13.85,13.85,13.85];
+    const alpha_x = [0.00,-0.08,-0.14,-0.20,-0.26,-0.31,-0.35,-0.40,-0.44,-0.48,-0.51,-0.55,-0.58,-0.62,-0.66,-0.69,-0.74,-0.78,-0.82,-0.86,-0.90,-0.92,-0.92,-0.92,-0.92,-0.92,-0.92,-0.92];
+    const alpha_y = [0.00,-5.37,-10.73,-16.08,-21.43,-26.76,-32.09,-37.41,-42.72,-48.03,-53.33,-58.63,-63.92,-69.21,-74.50,-79.79,-85.07,-90.37,-95.67,-100.97,-106.29,-109.67,-109.67,-109.67,-109.67,-109.67,-109.67,-109.67];
+    const alpha_z = [0.10,0.06,0.05,0.05,0.06,0.08,0.10,0.13,0.16,0.19,0.22,0.25,0.29,0.32,0.35,0.38,0.40,0.41,0.41,0.39,0.35,0.32,0.32,0.32,0.32,0.32,0.32,0.32];
+
+    function toPositionFrames(points, bias) {
+      bias = bias || 0;
+      return points.map((p, i) => ({
+        frame: i * frameRate / discretization / playbackSpeed,
+        value: p * distanceConversion + bias
+      }));
+    }
+
+    function toRotationFrames(points) {
+      return points.map((p, i) => ({
+        frame: i * frameRate / discretization / playbackSpeed,
+        value: p
+      }));
     }
 
     // createParticles(scene);
@@ -110,7 +129,7 @@
     const task = assetsManager.addMeshTask("task2", "", "ultimate_frisbee/", "scene.gltf");
     task.onSuccess = task => {
       const frisbee = task.loadedMeshes[0];
-      frisbee.position = new BABYLON.Vector3(1, 1, 2);
+      frisbee.position = new BABYLON.Vector3(0, 1, 0);
       frisbee.rotation = new BABYLON.Vector3(0, 0, 0);
       frisbee.scaling = new BABYLON.Vector3(0.0001, 0.0001, 0.0001);
 
@@ -123,22 +142,19 @@
 
       try {
         const velocityCorrection = 1
-        const xSlide = new BABYLON.Animation("translate", "position.x", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        const ySlide = new BABYLON.Animation("translate", "position.y", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        const zSlide = new BABYLON.Animation("translate", "position.z", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        const x = [0.00,-0.00,-0.01,-0.03,-0.05,-0.09,-0.13,-0.18,-0.25,-0.34,-0.45,-0.59,-0.75,-0.95,-1.19,-1.47,-1.80,-2.17,-2.59,-3.06,-3.57,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92];
-        const y = [1.00,0.99,0.97,0.96,0.97,1.00,1.05,1.10,1.17,1.23,1.28,1.33,1.36,1.36,1.33,1.27,1.17,1.02,0.82,0.56,0.24,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00];
-        const z = [0.00,1.05,2.07,3.05,4.00,4.91,5.78,6.61,7.40,8.15,8.87,9.54,10.18,10.78,11.35,11.87,12.35,12.79,13.17,13.49,13.74,13.85,13.85,13.85,13.85,13.85,13.85,13.85];
-        xSlide.setKeys(toFrames(x));
-        ySlide.setKeys(toFrames(y));
-        zSlide.setKeys(toFrames(z));
-        const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        yRot.setKeys([
-          {frame: 0, value: 0},
-          {frame: frameRate, value: Math.PI},
-          {frame: frameRate * 2, value: Math.PI * 2}
-        ]);
-        scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, yRot], 0, (originalMaxTime -1) / playbackSpeed * frameRate, true);
+        const xSlide = new BABYLON.Animation("translateX", "position.x", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const ySlide = new BABYLON.Animation("translateY", "position.y", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const zSlide = new BABYLON.Animation("translateZ", "position.z", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        xSlide.setKeys(toPositionFrames(x));
+        ySlide.setKeys(toPositionFrames(y, heightBias));
+        zSlide.setKeys(toPositionFrames(z));
+        const xRot = new BABYLON.Animation("xRot", "rotation.x", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const zRot = new BABYLON.Animation("zRot", "rotation.z", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        xRot.setKeys(toRotationFrames(alpha_x));
+        yRot.setKeys(toRotationFrames(alpha_y));
+        zRot.setKeys(toRotationFrames(alpha_z));
+        scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, yRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - frameRate , true);
 
         createParticles(scene, frisbee);
       } catch (e) {

@@ -1,5 +1,6 @@
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
+import {createFogParticles} from "./fog";
 
 export const createScene = async function (engine, canvas) {
   // Create scene
@@ -117,6 +118,7 @@ export const createScene = async function (engine, canvas) {
     }
   }
   assetsManager.load();
+  // createFogParticles(scene);
 
   return scene;
 };

@@ -85,22 +85,22 @@
     camera.setTarget(new BABYLON.Vector3(0, 0, -1000));
     camera.attachControl(canvas, true);
 
-    // var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-    // light.intensity = 0.7;
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    light.intensity = 0.7;
 
     const frameRate = 30;
     const originalMaxTime = 3;
-    const playbackSpeed = 0.5;
+    const playbackSpeed = 0.7;
     const distanceConversion = 10;
     const discretization = 10;
     const heightBias = -1 * discretization;
 
-    const x = [0.00,-0.00,-0.01,-0.03,-0.05,-0.09,-0.13,-0.18,-0.25,-0.34,-0.45,-0.59,-0.75,-0.95,-1.19,-1.47,-1.80,-2.17,-2.59,-3.06,-3.57,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92,-3.92];
-    const y = [1.00,0.99,0.97,0.96,0.97,1.00,1.05,1.10,1.17,1.23,1.28,1.33,1.36,1.36,1.33,1.27,1.17,1.02,0.82,0.56,0.24,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00,-0.00];
-    const z = [0.00,1.05,2.07,3.05,4.00,4.91,5.78,6.61,7.40,8.15,8.87,9.54,10.18,10.78,11.35,11.87,12.35,12.79,13.17,13.49,13.74,13.85,13.85,13.85,13.85,13.85,13.85,13.85];
-    const alpha_x = [0.00,-0.08,-0.14,-0.20,-0.26,-0.31,-0.35,-0.40,-0.44,-0.48,-0.51,-0.55,-0.58,-0.62,-0.66,-0.69,-0.74,-0.78,-0.82,-0.86,-0.90,-0.92,-0.92,-0.92,-0.92,-0.92,-0.92,-0.92];
-    const alpha_y = [0.00,-5.37,-10.73,-16.08,-21.43,-26.76,-32.09,-37.41,-42.72,-48.03,-53.33,-58.63,-63.92,-69.21,-74.50,-79.79,-85.07,-90.37,-95.67,-100.97,-106.29,-109.67,-109.67,-109.67,-109.67,-109.67,-109.67,-109.67];
-    const alpha_z = [0.10,0.06,0.05,0.05,0.06,0.08,0.10,0.13,0.16,0.19,0.22,0.25,0.29,0.32,0.35,0.38,0.40,0.41,0.41,0.39,0.35,0.32,0.32,0.32,0.32,0.32,0.32,0.32];
+    const x = [0.00,0.00,0.00,0.00,0.01,0.01,0.02,0.03,0.03,0.03,0.03,0.03,0.02,-0.00,-0.03,-0.06,-0.11,-0.17,-0.25,-0.36,-0.50,-0.69,-0.92,-1.20,-1.55,-1.95,-2.06,-2.06];
+    const y = [1.00,0.99,0.97,0.96,0.97,1.00,1.04,1.10,1.17,1.24,1.31,1.37,1.42,1.46,1.48,1.48,1.46,1.42,1.35,1.27,1.16,1.02,0.85,0.64,0.39,0.09,-0.00,-0.00];
+    const z = [0.00,1.05,2.07,3.05,4.00,4.91,5.78,6.62,7.41,8.16,8.88,9.56,10.21,10.83,11.41,11.97,12.51,13.03,13.52,14.00,14.46,14.89,15.29,15.66,15.97,16.21,16.26,16.26];
+    const alpha_x = [0.00,-0.07,-0.14,-0.20,-0.25,-0.31,-0.35,-0.40,-0.44,-0.47,-0.51,-0.54,-0.56,-0.59,-0.61,-0.63,-0.65,-0.67,-0.69,-0.71,-0.73,-0.75,-0.77,-0.79,-0.80,-0.81,-0.82,-0.82];
+    const alpha_y = [0.00,-21.47,-42.90,-64.31,-85.70,-107.06,-128.40,-149.71,-171.01,-192.29,-213.56,-234.81,-256.05,-277.28,-298.50,-319.71,-340.91,-362.11,-383.29,-404.47,-425.65,-446.83,-468.00,-489.17,-510.33,-531.50,-537.00,-537.00];
+    const alpha_z = [0.00,-0.01,-0.01,-0.01,-0.01,-0.00,0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.10,0.11,0.12,0.13,0.14,0.14,0.14,0.14,0.12,0.10,0.07,0.06,0.06];
 
     function toPositionFrames(points, bias) {
       bias = bias || 0;
@@ -136,7 +136,7 @@
       const material = new BABYLON.StandardMaterial("frisbee", scene);
       material.diffuseColor = new BABYLON.Color3(0, 0, 0);
       material.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-      material.emissiveColor = new BABYLON.Color3(1, 0, 1);
+      material.emissiveColor = new BABYLON.Color3(0.5, 0, 0.5);
       material.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
       frisbee.getChildMeshes(false, c => c.id === 'TARELKA_Mat.1_0')[0].material = material;
 
@@ -154,7 +154,7 @@
         xRot.setKeys(toRotationFrames(alpha_x));
         yRot.setKeys(toRotationFrames(alpha_y));
         zRot.setKeys(toRotationFrames(alpha_z));
-        scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, yRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - frameRate , true);
+        scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed , true);
 
         createParticles(scene, frisbee);
       } catch (e) {

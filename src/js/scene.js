@@ -81,6 +81,14 @@ export const createScene = async function (engine, canvas) {
   };
   landscapeTask.onError = err => console.log("Cannot load scene", err);
 
+  const pineapple = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
+  pineapple.onError = err => console.log("Cannot load scene", err);
+  pineapple.onSuccess = task => {
+    const p = task.loadedMeshes[0];
+    p.position = new BABYLON.Vector3(0, 0.5, 25);
+    p.scaling = new BABYLON.Vector3(3, 3, 3);
+  };
+
   const task = assetsManager.addMeshTask("task2", "", "disc/", "scene.gltf");
   task.onError = err => console.log("Cannot load scene", err);
   task.onSuccess = task => {

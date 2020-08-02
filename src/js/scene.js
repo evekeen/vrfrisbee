@@ -94,7 +94,7 @@ export const createScene = async function (engine, canvas) {
   pMaterialExplosion.alpha = 0.5;
 
   const assetsManager = new BABYLON.AssetsManager(scene);
-  const landscapeTask = assetsManager.addMeshTask("landscape", "", "/barcelona/", "scene.gltf");
+  const landscapeTask = assetsManager.addMeshTask("landscape", "", "barcelona/", "scene.gltf");
   landscapeTask.onSuccess = task => {
     const landscape = task.loadedMeshes[0];
     landscape.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0);
@@ -147,7 +147,7 @@ export const createScene = async function (engine, canvas) {
       zRot.setKeys(toRotationFrames(alpha_z));
       scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, true);
 
-      // createParticles(scene, frisbee);
+      createParticles(scene, frisbee);
     } catch (e) {
       console.log(e);
     }

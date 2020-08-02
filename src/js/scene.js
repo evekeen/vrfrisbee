@@ -4,9 +4,8 @@ import 'babylonjs-loaders';
 const frameRate = 30;
 const originalMaxTime = 3;
 const playbackSpeed = 0.7;
-const distanceConversion = 10;
+const distanceConversion = 5;
 const discretization = 10;
-const heightBias = -1 * discretization;
 
 const x = [0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03, 0.03, 0.03, 0.03, 0.03, 0.02, -0.00, -0.03, -0.06, -0.11, -0.17, -0.25, -0.36, -0.50, -0.69, -0.92, -1.20, -1.55, -1.95, -2.06, -2.06];
 const y = [1.00, 0.99, 0.97, 0.96, 0.97, 1.00, 1.04, 1.10, 1.17, 1.24, 1.31, 1.37, 1.42, 1.46, 1.48, 1.48, 1.46, 1.42, 1.35, 1.27, 1.16, 1.02, 0.85, 0.64, 0.39, 0.09, -0.00, -0.00];
@@ -96,7 +95,7 @@ export const createScene = async function (engine, canvas) {
     frisbee = task.loadedMeshes[0];
     frisbee.position = new BABYLON.Vector3(0, 1, 0);
     frisbee.rotation = new BABYLON.Vector3(0, 0, 0);
-    frisbee.scaling = new BABYLON.Vector3(0.0001, 0.0001, 0.0001);
+    frisbee.scaling = new BABYLON.Vector3(0.00005, 0.00005, 0.00005);
     frisbee.checkCollisions = true;
     frisbee.getChildMeshes(false, c => c.id === 'TARELKA_Mat.1_0')[0].material = fMaterial;
     frisbee.setEnabled(false);
@@ -144,6 +143,7 @@ export const createScene = async function (engine, canvas) {
               if (frisbee) {
                 frisbee.setEnabled(true);
                 frisbee.position = ray.origin.clone();
+                frisbee.rotation = new BABYLON.Vector3();
               }
             } else {
               pressed = false;
@@ -157,6 +157,7 @@ export const createScene = async function (engine, canvas) {
         controller.getWorldPointerRayToRef(ray, true);
         if (frisbee && pressed) {
           frisbee.position = ray.origin.clone();
+          frisbee.rotation = new BABYLON.Vector3();
         }
       });
 
@@ -192,9 +193,9 @@ function throwFrisbee(scene, frisbee, ray) {
   const xRot = new BABYLON.Animation("xRot", "rotation.x", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zRot = new BABYLON.Animation("zRot", "rotation.z", frameRate * velocityCorrection, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  const xTranslated = x.map(p => p + ray.origin.x);
-  const yTranslated = y.map(p => p + ray.origin.y - 1);
-  const zTranslated = z.map(p => p + ray.origin.z);
+  const xTranslated = x.map(p => p + ray.origin.x / distanceConversion);
+  const yTranslated = y.map(p => p + ray.origin.y / distanceConversion - 1);
+  const zTranslated = z.map(p => p + ray.origin.z / distanceConversion);
   xSlide.setKeys(toPositionFrames(xTranslated));
   ySlide.setKeys(toPositionFrames(yTranslated));
   zSlide.setKeys(toPositionFrames(zTranslated));

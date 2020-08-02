@@ -5,6 +5,7 @@ import {createFogParticles} from "./fog";
 export const createScene = async function (engine, canvas) {
   // Create scene
   const scene = new BABYLON.Scene(engine);
+  scene.collisionsEnabled = true;
   // var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
   // env.setMainColor(BABYLON.Color3.FromHexString("#010002"))
 
@@ -49,12 +50,12 @@ export const createScene = async function (engine, canvas) {
   const discretization = 10;
   const heightBias = -1 * discretization;
 
-  const x = [0.00,0.00,0.00,0.00,0.01,0.01,0.02,0.03,0.03,0.03,0.03,0.03,0.02,-0.00,-0.03,-0.06,-0.11,-0.17,-0.25,-0.36,-0.50,-0.69,-0.92,-1.20,-1.55,-1.95,-2.06,-2.06];
-  const y = [1.00,0.99,0.97,0.96,0.97,1.00,1.04,1.10,1.17,1.24,1.31,1.37,1.42,1.46,1.48,1.48,1.46,1.42,1.35,1.27,1.16,1.02,0.85,0.64,0.39,0.09,-0.00,-0.00];
-  const z = [0.00,1.05,2.07,3.05,4.00,4.91,5.78,6.62,7.41,8.16,8.88,9.56,10.21,10.83,11.41,11.97,12.51,13.03,13.52,14.00,14.46,14.89,15.29,15.66,15.97,16.21,16.26,16.26];
-  const alpha_x = [0.00,-0.07,-0.14,-0.20,-0.25,-0.31,-0.35,-0.40,-0.44,-0.47,-0.51,-0.54,-0.56,-0.59,-0.61,-0.63,-0.65,-0.67,-0.69,-0.71,-0.73,-0.75,-0.77,-0.79,-0.80,-0.81,-0.82,-0.82];
-  const alpha_y = [0.00,-21.47,-42.90,-64.31,-85.70,-107.06,-128.40,-149.71,-171.01,-192.29,-213.56,-234.81,-256.05,-277.28,-298.50,-319.71,-340.91,-362.11,-383.29,-404.47,-425.65,-446.83,-468.00,-489.17,-510.33,-531.50,-537.00,-537.00];
-  const alpha_z = [0.00,-0.01,-0.01,-0.01,-0.01,-0.00,0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.10,0.11,0.12,0.13,0.14,0.14,0.14,0.14,0.12,0.10,0.07,0.06,0.06];
+  const x = [0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03, 0.03, 0.03, 0.03, 0.03, 0.02, -0.00, -0.03, -0.06, -0.11, -0.17, -0.25, -0.36, -0.50, -0.69, -0.92, -1.20, -1.55, -1.95, -2.06, -2.06];
+  const y = [1.00, 0.99, 0.97, 0.96, 0.97, 1.00, 1.04, 1.10, 1.17, 1.24, 1.31, 1.37, 1.42, 1.46, 1.48, 1.48, 1.46, 1.42, 1.35, 1.27, 1.16, 1.02, 0.85, 0.64, 0.39, 0.09, -0.00, -0.00];
+  const z = [0.00, 1.05, 2.07, 3.05, 4.00, 4.91, 5.78, 6.62, 7.41, 8.16, 8.88, 9.56, 10.21, 10.83, 11.41, 11.97, 12.51, 13.03, 13.52, 14.00, 14.46, 14.89, 15.29, 15.66, 15.97, 16.21, 16.26, 16.26];
+  const alpha_x = [0.00, -0.07, -0.14, -0.20, -0.25, -0.31, -0.35, -0.40, -0.44, -0.47, -0.51, -0.54, -0.56, -0.59, -0.61, -0.63, -0.65, -0.67, -0.69, -0.71, -0.73, -0.75, -0.77, -0.79, -0.80, -0.81, -0.82, -0.82];
+  const alpha_y = [0.00, -21.47, -42.90, -64.31, -85.70, -107.06, -128.40, -149.71, -171.01, -192.29, -213.56, -234.81, -256.05, -277.28, -298.50, -319.71, -340.91, -362.11, -383.29, -404.47, -425.65, -446.83, -468.00, -489.17, -510.33, -531.50, -537.00, -537.00];
+  const alpha_z = [0.00, -0.01, -0.01, -0.01, -0.01, -0.00, 0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.10, 0.11, 0.12, 0.13, 0.14, 0.14, 0.14, 0.14, 0.12, 0.10, 0.07, 0.06, 0.06];
 
   function toPositionFrames(points, bias) {
     bias = bias || 0;
@@ -71,7 +72,19 @@ export const createScene = async function (engine, canvas) {
     }));
   }
 
-  // createParticles(scene);
+  const fMaterial = new BABYLON.StandardMaterial("frisbee", scene);
+  fMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+  fMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+  fMaterial.emissiveColor = new BABYLON.Color3(0.5, 0, 0.5);
+  fMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+  fMaterial.alpha = 0.8;
+
+  const pMaterial = new BABYLON.StandardMaterial("frisbee", scene);
+  pMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1);
+  pMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+  pMaterial.emissiveColor = new BABYLON.Color3(0, 0, 0);
+  pMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+  pMaterial.alpha = 0.5;
 
   const assetsManager = new BABYLON.AssetsManager(scene);
   const landscapeTask = assetsManager.addMeshTask("landscape", "", "/barcelona/", "scene.gltf");
@@ -81,28 +94,35 @@ export const createScene = async function (engine, canvas) {
   };
   landscapeTask.onError = err => console.log("Cannot load scene", err);
 
-  const pineapple = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
-  pineapple.onError = err => console.log("Cannot load scene", err);
-  pineapple.onSuccess = task => {
-    const p = task.loadedMeshes[0];
-    p.position = new BABYLON.Vector3(0, 0.5, 25);
-    p.scaling = new BABYLON.Vector3(3, 3, 3);
-  };
+  let pineapple;
+  let frisbee;
+
+  // const pTask = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
+  // pTask.onError = err => console.log("Cannot load scene", err);
+  // pTask.onSuccess = task => {
+  //   task.loadedMeshes.forEach(e => e.checkCollisions = true);
+  //   pineapple = task.loadedMeshes[0];
+  //   pineapple.position = new BABYLON.Vector3(0, 0, 25);
+  //   pineapple.scaling = new BABYLON.Vector3(3, 3, 3);
+  //   pineapple.checkCollisions = true;
+  //   pineapple.showBoundingBox = true;
+  // };
+
+  pineapple = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2}, scene);
+  pineapple.position = new BABYLON.Vector3(0, 0, 25);
+  pineapple.material = pMaterial;
 
   const task = assetsManager.addMeshTask("task2", "", "disc/", "scene.gltf");
   task.onError = err => console.log("Cannot load scene", err);
   task.onSuccess = task => {
-    const frisbee = task.loadedMeshes[0];
+    task.loadedMeshes.forEach(e => e.checkCollisions = true);
+    frisbee = task.loadedMeshes[0];
     frisbee.position = new BABYLON.Vector3(0, 1, 0);
     frisbee.rotation = new BABYLON.Vector3(0, 0, 0);
     frisbee.scaling = new BABYLON.Vector3(0.0001, 0.0001, 0.0001);
-
-    const material = new BABYLON.StandardMaterial("frisbee", scene);
-    material.diffuseColor = new BABYLON.Color3(0, 0, 0);
-    material.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-    material.emissiveColor = new BABYLON.Color3(0.5, 0, 0.5);
-    material.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
-    frisbee.getChildMeshes(false, c => c.id === 'TARELKA_Mat.1_0')[0].material = material;
+    frisbee.checkCollisions = true;
+    frisbee.showBoundingBox = true;
+    frisbee.getChildMeshes(false, c => c.id === 'TARELKA_Mat.1_0')[0].material = fMaterial;
 
     try {
       const velocityCorrection = 1
@@ -118,15 +138,51 @@ export const createScene = async function (engine, canvas) {
       xRot.setKeys(toRotationFrames(alpha_x));
       yRot.setKeys(toRotationFrames(alpha_y));
       zRot.setKeys(toRotationFrames(alpha_z));
-      scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed , true);
+      scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, true);
 
-      createParticles(scene, frisbee);
+      // createParticles(scene, frisbee);
     } catch (e) {
       console.log(e);
     }
   }
   assetsManager.load();
   // createFogParticles(scene);
+
+  let collision = false;
+
+  var pipeline = new BABYLON.DefaultRenderingPipeline("default", true, scene);
+  scene.imageProcessingConfiguration.toneMappingEnabled = true;
+  scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+  scene.imageProcessingConfiguration.exposure = 1;
+  pipeline.bloomEnabled = true;
+  pipeline.bloomThreshold = 0.8;
+  pipeline.bloomWeight = 0.3;
+  pipeline.bloomKernel = 64;
+  pipeline.bloomScale = 0.5;
+
+  scene.registerBeforeRender(() => {
+    if (!frisbee || !pineapple) return;
+    if (frisbee.intersectsMesh(pineapple, false)) {
+      if (!collision) {
+        collision = true;
+        BABYLON.ParticleHelper.CreateAsync("explosion", scene).then((particles) => {
+          particles.systems.forEach(s => {
+            s.disposeOnStop = true;
+            s.emitter = pineapple;
+            // s.minSize *= 0.1;
+            // s.maxSize *= 0.1;
+            // s.minEmitPower *= 0.1;
+            // s.maxEmitPower *= 0.1;
+          });
+          particles.start();
+          pineapple.visible = false;
+        });
+      }
+    } else {
+      collision = false;
+      pineapple.visible = true;
+    }
+  });
 
   return scene;
 };
@@ -171,4 +227,4 @@ function createParticles(scene, emitter) {
 
   // Start the particle system
   particleSystem.start();
-};
+}

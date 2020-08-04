@@ -4,6 +4,7 @@
   "version": "0.3.0",
   "license": "MIT",
   "scripts": {
+    "test": "webpack --config webpack.config.test.js && mocha --exit dist/tests.test.js",
     "build": "webpack",
     "start": "webpack-dev-server",
     "start-math": "webpack-dev-server --config webpack.config.math.js",
@@ -14,8 +15,10 @@
     "@babylonjs/core": "4.1.0",
     "@babylonjs/materials": "4.1.0",
     "budo": "11.6.4",
+    "chai": "4.2.0",
     "ghpages": "0.0.10",
     "gltf-webpack-loader": "1.0.6",
+    "mocha": "8.1.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"

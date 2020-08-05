@@ -23,16 +23,33 @@ const correction90 = math.matrix([
 
 export function rotate(trajectory, vector) {
   const [x, y, z] = vector;
+  const ySin = x;
+  const yCos = z;
   const yRotation = math.matrix([
-    [-x, 0, z],
+    [yCos, 0, ySin],
     [0, 1, 0],
-    [-z, 0, -x]
+    [-ySin, 0, yCos]
   ]);
+
+  const xSin = -y;
+  const xCos = z;
   const xRotation = math.matrix([
     [1, 0, 0],
-    [0, z, -y],
-    [0, y, z]
+    [0, xCos, -xSin],
+    [0, xSin, xCos]
   ]);
-  const rotation = math.multiply(yRotation, correction90);
-  return math.multiply(rotation, trajectory).toArray();
+  //
+  // const zSin = y;
+  // const zCos = x;
+  // const zRotation = math.matrix([
+  //   [zCos, -zSin, 0],
+  //   [zSin, zCos, 0],
+  //   [0, 0, 1]
+  // ]);
+
+
+  // let rotation = math.multiply(yRotation, xRotation);
+  // rotation = math.multiply(zRotation, rotation);
+  let first = math.multiply(xRotation, trajectory);
+  return math.multiply(yRotation, first).toArray();
 }

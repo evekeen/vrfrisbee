@@ -1,6 +1,9 @@
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
 import {rotate, trajectories} from "./trajectories";
+import * as math from 'mathjs';
+import * as cannon from 'cannon';
+import { CannonJSPlugin } from 'babylonjs';
 
 const frameRate = 30;
 const originalMaxTime = 3;
@@ -14,6 +17,8 @@ export const createScene = async function (engine, canvas) {
   // Create scene
   const scene = new BABYLON.Scene(engine);
   scene.collisionsEnabled = true;
+  const cannonPlugin = new CannonJSPlugin(true, 10, cannon);
+  scene.enablePhysics(null, cannonPlugin);
   // var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
   // env.setMainColor(BABYLON.Color3.FromHexString("#010002"))
 
@@ -102,7 +107,7 @@ export const createScene = async function (engine, canvas) {
   // createFogParticles(scene);
 
   let collision = false;
-  const collisionFrames = frameRate * 3;
+  const collisionFrames = frameRate * 5;
   let collisionFrame = 0;
 
   scene.registerBeforeRender(() => {
@@ -114,12 +119,16 @@ export const createScene = async function (engine, canvas) {
         pineapple.material = pMaterialExplosion;
         const scaling = 1.5;
         pineapple.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
+        pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {mass: 10, restitution: 0.5}, scene);
+        pineapple.physicsImpostor.applyImpulse(new BABYLON.Vector3(100, 10, 400), pineapple.getAbsolutePosition());
       }
     }
     if (collision && collisionFrame++ > collisionFrames) {
       collision = false;
       pineapple.material = pMaterial;
       pineapple.scaling = new BABYLON.Vector3(1, 1, 1);
+      pineapple.position = new BABYLON.Vector3(0, 0, 25);
+      pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {mass: 0, restitution: 0.5}, scene);
     }
   });
 

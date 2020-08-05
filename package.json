@@ -30,6 +30,7 @@
   "dependencies": {
     "babylonjs": "4.1.0",
     "babylonjs-loaders": "4.1.0",
+    "cannon": "^0.6.2",
     "mathjs": "7.1.0"
   }
 }

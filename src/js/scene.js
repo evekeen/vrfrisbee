@@ -61,7 +61,7 @@ export const createScene = async function (engine, canvas) {
   pMaterialExplosion.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
   pMaterialExplosion.emissiveColor = new BABYLON.Color3(0, 0, 0);
   pMaterialExplosion.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
-  pMaterialExplosion.alpha = 0.5;
+  pMaterialExplosion.alpha = 1;
 
   const assetsManager = new BABYLON.AssetsManager(scene);
   const landscapeTask = assetsManager.addMeshTask("landscape", "", "barcelona/", "scene.gltf");

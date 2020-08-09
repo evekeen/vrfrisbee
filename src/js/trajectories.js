@@ -72,7 +72,24 @@ export function findVelocity(traceP, pointNumber) {
       z: p.z - lastPoints[i].z
     };
   });
-  const lengths = velocities.map(vectorSquareLength);
-  const indexOfMaxVelocity = lengths.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-  return pointToArray(velocities[indexOfMaxVelocity]);
+  // const lengths = velocities.map(vectorSquareLength);
+  // const indexOfMaxVelocity = lengths.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+  const indexOfMaxVelocity = velocities.length - 1;
+  let average;
+  if (indexOfMaxVelocity === 0) {
+    average = averagePoint(velocities.slice(indexOfMaxVelocity, indexOfMaxVelocity + 1));
+  } else if (indexOfMaxVelocity === velocities.length - 1) {
+    average = averagePoint(velocities.slice(indexOfMaxVelocity - 1, indexOfMaxVelocity));
+  } else {
+    average = averagePoint(velocities.slice(indexOfMaxVelocity - 1, indexOfMaxVelocity + 1));
+  }
+  return pointToArray(average);
+}
+
+function averagePoint(points) {
+  return points.reduce((average, point) => average ? {
+    x: average.x + point.x / 2,
+    y: average.y + point.y / 2,
+    z: average.z + point.z / 2
+  } : point, undefined);
 }

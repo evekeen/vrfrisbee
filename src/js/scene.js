@@ -162,8 +162,7 @@ export const createScene = async function (engine, canvas) {
               pressed = false;
               console.log(traceP);
               console.log(traceR);
-              const velocity = findVelocity(traceP, 8);
-              frisbee && throwFrisbee(scene, frisbee, ray, velocity);
+              frisbee && throwFrisbee(scene, frisbee, traceP, traceR);
             }
           }
         });
@@ -205,7 +204,7 @@ function toRotationFrames(points) {
   }));
 }
 
-function throwFrisbee(scene, frisbee, ray, velocityArray) {
+function throwFrisbee(scene, frisbee, positions, orientations) {
   const xSlide = new BABYLON.Animation("translateX", "position.x", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const ySlide = new BABYLON.Animation("translateY", "position.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zSlide = new BABYLON.Animation("translateZ", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -213,13 +212,15 @@ function throwFrisbee(scene, frisbee, ray, velocityArray) {
   const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zRot = new BABYLON.Animation("zRot", "rotation.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-  const trajectory = getTrajectory(velocityArray, ray.direction.asArray());
+  const lastPosition = positions[positions.length - 1];
+  const velocityArray = findVelocity(positions, 8);
+  const trajectory = getTrajectory(velocityArray, orientations);
   const [alpha_x, alpha_y, alpha_z] = trajectory.rotation;
   const translation = rotate(trajectory.translation, velocityArray, velocityScale);
   const [x, y, z] = translation;
-  const xTranslated = x.map(p => p + ray.origin.x / distanceConversion);
-  const yTranslated = y.map(p => p + ray.origin.y / distanceConversion);
-  const zTranslated = z.map(p => p + ray.origin.z / distanceConversion);
+  const xTranslated = x.map(p => p + lastPosition.x / distanceConversion);
+  const yTranslated = y.map(p => p + lastPosition.y / distanceConversion);
+  const zTranslated = z.map(p => p + lastPosition.z / distanceConversion);
   xSlide.setKeys(toPositionFrames(xTranslated));
   ySlide.setKeys(toPositionFrames(yTranslated));
   zSlide.setKeys(toPositionFrames(zTranslated));

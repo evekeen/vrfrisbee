@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs';
 import {CannonJSPlugin} from 'babylonjs';
 import 'babylonjs-loaders';
-import {findVelocity, rotate, trajectories} from "./trajectories";
+import {findVelocity, getTrajectory, rotate, trajectories} from "./trajectories";
 import * as cannon from 'cannon';
 
 const frameRate = 30;
@@ -213,7 +213,7 @@ function throwFrisbee(scene, frisbee, ray, velocityArray) {
   const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zRot = new BABYLON.Animation("zRot", "rotation.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-  const trajectory = trajectories.straightForehand;
+  const trajectory = getTrajectory(velocityArray, ray.direction.asArray());
   const [alpha_x, alpha_y, alpha_z] = trajectory.rotation;
   const translation = rotate(trajectory.translation, velocityArray, velocityScale);
   const [x, y, z] = translation;

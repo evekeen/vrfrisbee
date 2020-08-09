@@ -21,18 +21,18 @@ const correction90 = math.matrix([
   [1, 0, 0]
 ]);
 
-export function rotate(trajectory, vector) {
-  const [x, y, z] = vector;
-  const ySin = x;
-  const yCos = z;
+export function rotate(trajectory, velocities, scale) {
+  const [vx, vy, vz] = velocities.map(v => v * scale);
+  const ySin = vx;
+  const yCos = vz;
   const yRotation = math.matrix([
     [yCos, 0, ySin],
     [0, 1, 0],
     [-ySin, 0, yCos]
   ]);
 
-  const xSin = -y;
-  const xCos = z;
+  const xSin = -vy;
+  const xCos = vz;
   const xRotation = math.matrix([
     [1, 0, 0],
     [0, xCos, -xSin],

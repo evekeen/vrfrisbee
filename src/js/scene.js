@@ -1,7 +1,6 @@
 import * as BABYLON from 'babylonjs';
 import 'babylonjs-loaders';
 import {rotate, trajectories} from "./trajectories";
-import * as math from 'mathjs';
 import * as cannon from 'cannon';
 import { CannonJSPlugin } from 'babylonjs';
 
@@ -10,6 +9,7 @@ const originalMaxTime = 3;
 const playbackSpeed = 0.7;
 const distanceConversion = 5;
 const discretization = 10;
+const velocityScale = 10;
 
 const frisbeeScale = 0.00005;
 
@@ -132,37 +132,54 @@ export const createScene = async function (engine, canvas) {
     }
   });
 
-  const ray = new BABYLON.Ray();
-  ray.origin = new BABYLON.Vector3();
-  ray.direction = new BABYLON.Vector3();
+  const ray = BABYLON.Ray.Zero();
   let pressed = false;
+  let traceP = [];
+  let traceR = [];
 
   xr.input.onControllerAddedObservable.add(controller => {
     if (controller.inputSource.handedness === 'right') {
       controller.onMotionControllerInitObservable.add(() => {
-        const component = controller.motionController.getMainComponent();
+        const component = controller.motionController.getComponent('xr-standard-squeeze') || controller.motionController.getMainComponent();
         component.onButtonStateChangedObservable.add(() => {
           if (component.changes.pressed) {
             if (component.pressed) {
               pressed = true;
+              traceP = [];
+              traceR = [];
               if (frisbee) {
                 frisbee.setEnabled(true);
                 frisbee.position = ray.origin.clone();
-                frisbee.rotation = new BABYLON.Vector3();
+                frisbee.rotation = BABYLON.Vector3.Zero();
               }
             } else {
               pressed = false;
-              frisbee && throwFrisbee(scene, frisbee, ray);
+              console.log(traceP);
+              console.log(traceR);
+              const lastPoints = traceP.slice(-2);
+              const lastVelocities = lastPoints.slice(1).map((p, i) => {
+                return {
+                  x: p.x - lastPoints[i].x,
+                  y: p.y - lastPoints[i].y,
+                  z: p.z - lastPoints[i].z
+                }
+              })[0];
+              const velocities = [lastVelocities.x, lastVelocities.y, lastVelocities.z];
+              frisbee && throwFrisbee(scene, frisbee, ray, velocities);
             }
           }
-        })
+        });
       });
 
       const frameObserver = xr.baseExperience.sessionManager.onXRFrameObservable.add(() => {
         controller.getWorldPointerRayToRef(ray, true);
         if (frisbee && pressed) {
-          frisbee.position = ray.origin.clone();
-          frisbee.rotation = new BABYLON.Vector3();
+          const position = ray.origin.clone();
+          const direction = ray.direction.clone();
+          traceP.push(position);
+          traceR.push(direction);
+          frisbee.position = position.clone();
+          frisbee.rotation = BABYLON.Vector3.Zero();
         }
       });
 
@@ -190,7 +207,7 @@ function toRotationFrames(points) {
   }));
 }
 
-function throwFrisbee(scene, frisbee, ray) {
+function throwFrisbee(scene, frisbee, ray, velocities) {
   const xSlide = new BABYLON.Animation("translateX", "position.x", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const ySlide = new BABYLON.Animation("translateY", "position.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zSlide = new BABYLON.Animation("translateZ", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -200,7 +217,7 @@ function throwFrisbee(scene, frisbee, ray) {
 
   const trajectory = trajectories.straightForehand;
   const [alpha_x, alpha_y, alpha_z] = trajectory.rotation;
-  const translation = rotate(trajectory.translation, ray.direction.asArray());
+  const translation = rotate(trajectory.translation, velocities, velocityScale);
   const [x, y, z] = translation;
   const xTranslated = x.map(p => p + ray.origin.x / distanceConversion);
   const yTranslated = y.map(p => p + ray.origin.y / distanceConversion);

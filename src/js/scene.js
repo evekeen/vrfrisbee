@@ -1,8 +1,8 @@
 import * as BABYLON from 'babylonjs';
+import {CannonJSPlugin} from 'babylonjs';
 import 'babylonjs-loaders';
-import {rotate, trajectories} from "./trajectories";
+import {findVelocity, rotate, trajectories} from "./trajectories";
 import * as cannon from 'cannon';
-import { CannonJSPlugin } from 'babylonjs';
 
 const frameRate = 30;
 const originalMaxTime = 3;
@@ -119,7 +119,10 @@ export const createScene = async function (engine, canvas) {
         pineapple.material = pMaterialExplosion;
         const scaling = 1.5;
         pineapple.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
-        pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {mass: 10, restitution: 0.5}, scene);
+        pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
+          mass: 10,
+          restitution: 0.5
+        }, scene);
         pineapple.physicsImpostor.applyImpulse(new BABYLON.Vector3(100, 10, 400), pineapple.getAbsolutePosition());
       }
     }
@@ -128,7 +131,10 @@ export const createScene = async function (engine, canvas) {
       pineapple.material = pMaterial;
       pineapple.scaling = new BABYLON.Vector3(1, 1, 1);
       pineapple.position = new BABYLON.Vector3(0, 0, 25);
-      pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {mass: 0, restitution: 0.5}, scene);
+      pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
+        mass: 0,
+        restitution: 0.5
+      }, scene);
     }
   });
 
@@ -156,16 +162,8 @@ export const createScene = async function (engine, canvas) {
               pressed = false;
               console.log(traceP);
               console.log(traceR);
-              const lastPoints = traceP.slice(-2);
-              const lastVelocities = lastPoints.slice(1).map((p, i) => {
-                return {
-                  x: p.x - lastPoints[i].x,
-                  y: p.y - lastPoints[i].y,
-                  z: p.z - lastPoints[i].z
-                }
-              })[0];
-              const velocities = [lastVelocities.x, lastVelocities.y, lastVelocities.z];
-              frisbee && throwFrisbee(scene, frisbee, ray, velocities);
+              const velocity = findVelocity(traceP, 8);
+              frisbee && throwFrisbee(scene, frisbee, ray, velocity);
             }
           }
         });
@@ -207,7 +205,7 @@ function toRotationFrames(points) {
   }));
 }
 
-function throwFrisbee(scene, frisbee, ray, velocities) {
+function throwFrisbee(scene, frisbee, ray, velocityArray) {
   const xSlide = new BABYLON.Animation("translateX", "position.x", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const ySlide = new BABYLON.Animation("translateY", "position.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zSlide = new BABYLON.Animation("translateZ", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -217,7 +215,7 @@ function throwFrisbee(scene, frisbee, ray, velocities) {
 
   const trajectory = trajectories.straightForehand;
   const [alpha_x, alpha_y, alpha_z] = trajectory.rotation;
-  const translation = rotate(trajectory.translation, velocities, velocityScale);
+  const translation = rotate(trajectory.translation, velocityArray, velocityScale);
   const [x, y, z] = translation;
   const xTranslated = x.map(p => p + ray.origin.x / distanceConversion);
   const yTranslated = y.map(p => p + ray.origin.y / distanceConversion);

@@ -21,8 +21,8 @@ const correction90 = math.matrix([
   [1, 0, 0]
 ]);
 
-export function rotate(trajectory, velocities, scale) {
-  const [vx, vy, vz] = velocities.map(v => v * scale);
+export function rotate(trajectory, velocityArray, scale) {
+  const [vx, vy, vz] = velocityArray.map(v => v * scale);
   const ySin = vx;
   const yCos = vz;
   const yRotation = math.matrix([
@@ -52,4 +52,27 @@ export function rotate(trajectory, velocities, scale) {
   // rotation = math.multiply(zRotation, rotation);
   let first = math.multiply(xRotation, trajectory);
   return math.multiply(yRotation, first).toArray();
+}
+
+export function vectorSquareLength(point) {
+  const {x, y, z} = point;
+  return x * x + y * y + z * z;
+}
+
+export function pointToArray(point) {
+  return [point.x, point.y, point.z];
+}
+
+export function findVelocity(traceP, pointNumber) {
+  const lastPoints = traceP.slice(-pointNumber);
+  const velocities = lastPoints.slice(1).map((p, i) => {
+    return {
+      x: p.x - lastPoints[i].x,
+      y: p.y - lastPoints[i].y,
+      z: p.z - lastPoints[i].z
+    };
+  });
+  const lengths = velocities.map(vectorSquareLength);
+  const indexOfMaxVelocity = lengths.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+  return pointToArray(velocities[indexOfMaxVelocity]);
 }

@@ -26,7 +26,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].bundle.js'
   },
-  mode: 'production',
+  mode: 'development',
   devtool: 'source-map',
   devServer: {
     contentBase: path.join(__dirname, 'src/static'),

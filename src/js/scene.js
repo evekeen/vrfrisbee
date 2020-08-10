@@ -12,6 +12,8 @@ const distanceConversion = 10;
 const discretization = 10;
 
 const frisbeeScale = 0.00005;
+const frisbees = [];
+let frisbeeCounter = 0;
 
 export const createScene = async function (engine, canvas) {
   // Create scene
@@ -111,31 +113,32 @@ export const createScene = async function (engine, canvas) {
   let collisionFrame = 0;
 
   scene.registerBeforeRender(() => {
-    if (!frisbee || !pineapple) return;
-    if (frisbee.intersectsMesh(pineapple, false)) {
-      if (!collision) {
-        collision = true;
-        collisionFrame = 0;
-        pineapple.material = pMaterialExplosion;
-        const scaling = 1.5;
-        pineapple.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
+    Object.values(frisbees).forEach(frisbee => {
+      if (frisbee.intersectsMesh(pineapple, false)) {
+        if (!collision) {
+          collision = true;
+          collisionFrame = 0;
+          pineapple.material = pMaterialExplosion;
+          const scaling = 1.5;
+          pineapple.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
+          pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
+            mass: 10,
+            restitution: 0.5
+          }, scene);
+          pineapple.physicsImpostor.applyImpulse(new BABYLON.Vector3(100, 10, 400), pineapple.getAbsolutePosition());
+        }
+      }
+      if (collision && collisionFrame++ > collisionFrames) {
+        collision = false;
+        pineapple.material = pMaterial;
+        pineapple.scaling = new BABYLON.Vector3(1, 1, 1);
+        pineapple.position = new BABYLON.Vector3(0, 0, 25);
         pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
-          mass: 10,
+          mass: 0,
           restitution: 0.5
         }, scene);
-        pineapple.physicsImpostor.applyImpulse(new BABYLON.Vector3(100, 10, 400), pineapple.getAbsolutePosition());
       }
-    }
-    if (collision && collisionFrame++ > collisionFrames) {
-      collision = false;
-      pineapple.material = pMaterial;
-      pineapple.scaling = new BABYLON.Vector3(1, 1, 1);
-      pineapple.position = new BABYLON.Vector3(0, 0, 25);
-      pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
-        mass: 0,
-        restitution: 0.5
-      }, scene);
-    }
+    });
   });
 
   const ray = BABYLON.Ray.Zero();
@@ -188,14 +191,11 @@ export const createScene = async function (engine, canvas) {
 
   function throwFrisbee(scene, frisbee, positions, orientations) {
     frisbee.setEnabled(false);
-    const f1 = frisbee.clone();
-    animateFlight(scene, f1, getTrajectory(positions, orientations, (points) => findLastVelocity(points, 8)));
-    const f2 = frisbee.clone();
+    const f1 = cloneFrisbee(frisbee);
+    const f2 = cloneFrisbee(frisbee);
     setFrisbeeMaterial(f2, pMaterial);
-    animateFlight(scene, f2, getTrajectory(positions, orientations, (points) => findAverageVelocity(points, 8))).onAnimationEnd = () => {
-      f2.dispose();
-      frisbee.setEnabled(true);
-    }
+    animateFlight(scene, f1, getTrajectory(positions, orientations, findLastVelocity));
+    animateFlight(scene, f2, getTrajectory(positions, orientations, (points) => findAverageVelocity(points, 4)));
   }
 
   return scene;
@@ -245,8 +245,8 @@ function animateFlight(scene, frisbee, trajectory) {
   xRot.setKeys(toRotationFrames(rotation[0]));
   yRot.setKeys(toRotationFrames(rotation[1]));
   zRot.setKeys(toRotationFrames(rotation[2]));
-  const anim = scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, true);
-  anim.onAnimationEnd = () => frisbee.dispose();
+  const anim = scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, false);
+  anim.onAnimationEnd = () => setTimeout(() => frisbee.dispose(), 1000);
   return anim;
 }
 
@@ -294,4 +294,12 @@ function createParticles(scene, emitter) {
 
 function setFrisbeeMaterial(frisbee, material) {
   frisbee.getChildMeshes(false, c => c.id.indexOf('TARELKA_Mat.1_0') !== -1)[0].material = material;
+}
+
+function cloneFrisbee(frisbee) {
+  const clone = frisbee.clone();
+  const id = frisbeeCounter++;
+  frisbees[id] = clone;
+  clone.onDispose = () => delete frisbees[id];
+  return clone;
 }

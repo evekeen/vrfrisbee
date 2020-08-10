@@ -37,12 +37,9 @@ export function pointToArray(point) {
   return [point.x, point.y, point.z];
 }
 
-export function findLastVelocity(traceP, pointNumber) {
+export function findLastVelocity(traceP) {
   if (traceP.length < 2) return [0, 0, 1];
-
-  const velocities = differentiate(traceP, pointNumber);
-  // const lengths = velocities.map(vectorSquareLength);
-  // const indexOfMaxVelocity = lengths.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+  const velocities = differentiate(traceP, 2);
   const indexOfMaxVelocity = velocities.length - 1;
   let average;
   if (indexOfMaxVelocity === 0) {

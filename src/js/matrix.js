@@ -2,7 +2,7 @@ import * as math from "mathjs";
 
 export function rotateZTrajectory(trajectory, velocityArray) {
   const [vx, vy, vz] = normalize(velocityArray);
-  const [xSin, xCos] = getProjectionsNormalized(-vy, vy === 0 ? 1 : vx);
+  const [xSin, xCos] = getProjectionsNormalized(-vy, vy === 0 ? 1 : Math.abs(vz));
   const xRotation = math.matrix([
     [1, 0, 0],
     [0, xCos, -xSin],
@@ -21,9 +21,9 @@ export function rotateZTrajectory(trajectory, velocityArray) {
 }
 
 function getProjectionsNormalized(sin, cos) {
-  const xBothZero = sin === cos && cos === 0;
-  const s = xBothZero ? 0 : sin;
-  const c = xBothZero ? 1 : cos;
+  const bothZero = sin === cos && cos === 0;
+  const s = bothZero ? 0 : sin;
+  const c = bothZero ? 1 : cos;
   const norm = Math.sqrt(s * s + c * c)
   return [s / norm, c / norm];
 }
@@ -70,7 +70,7 @@ function averagePoint(points) {
   } : point, undefined);
 }
 
-function normalize(array) {
+export function normalize(array) {
   const length = arrayLength(array);
   if (length === 0) return array;
   return array.map(v => v / length);

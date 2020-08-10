@@ -8,7 +8,7 @@ import * as cannon from 'cannon';
 const frameRate = 30;
 const originalMaxTime = 3;
 const playbackSpeed = 0.7;
-const distanceConversion = 50;
+const distanceConversion = 10;
 const discretization = 10;
 const velocityScale = 10;
 

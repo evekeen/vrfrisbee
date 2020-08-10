@@ -1,3 +1,5 @@
+import {arrayLength, normalize} from "./matrix";
+
 const WEAK_THRESHOLD = 0.1;
 
 export const trajectories = {

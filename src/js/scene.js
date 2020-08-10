@@ -1,23 +1,18 @@
 import * as BABYLON from 'babylonjs';
 import {CannonJSPlugin} from 'babylonjs';
 import 'babylonjs-loaders';
-import {arrayLength, findAverageVelocity, findLastVelocity, rotateZTrajectory, scaleAndTranslate} from "./matrix";
-import {getOriginalTrajectoryAndTilt} from "./trajectories";
+import {findAverageVelocity, findLastVelocity} from "./matrix";
 import * as cannon from 'cannon';
-
-const frameRate = 30;
-const originalMaxTime = 3;
-const playbackSpeed = 0.7;
-const distanceConversion = 10;
-const velocityFactor = 5;
-const discretization = 10;
+import {createParticles} from "./particles";
+import {animateFlight} from "./flight";
+import {getTrajectory} from "./trajectories";
+const collisionFrames = 150;
 
 const frisbeeScale = 0.00002;
 const frisbees = [];
 let frisbeeCounter = 0;
 
 export const createScene = async function (engine, canvas) {
-  // Create scene
   const scene = new BABYLON.Scene(engine);
   scene.collisionsEnabled = true;
   const cannonPlugin = new CannonJSPlugin(true, 10, cannon);
@@ -25,7 +20,6 @@ export const createScene = async function (engine, canvas) {
   // var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
   // env.setMainColor(BABYLON.Color3.FromHexString("#010002"))
 
-  // here we add XR support
   const xr = await scene.createDefaultXRExperienceAsync({
     // floorMeshes: [ground],
     uiOptions: {
@@ -110,7 +104,6 @@ export const createScene = async function (engine, canvas) {
   // createFogParticles(scene);
 
   let collision = false;
-  const collisionFrames = frameRate * 5;
   let collisionFrame = 0;
 
   scene.registerBeforeRender(() => {
@@ -205,95 +198,6 @@ export const createScene = async function (engine, canvas) {
 
   return scene;
 };
-
-function toPositionFrames(points, bias) {
-  bias = bias || 0;
-  return points.map((p, i) => ({
-    frame: i * frameRate / discretization / playbackSpeed,
-    value: p * distanceConversion + bias
-  }));
-}
-
-function toRotationFrames(points) {
-  return points.map((p, i) => ({
-    frame: i * frameRate / discretization / playbackSpeed,
-    value: p
-  }));
-}
-
-function getTrajectory(positions, orientations, velocityProvider) {
-  const lastPosition = positions[positions.length - 1];
-  const velocityArray = velocityProvider(positions);
-  const controllerPositionShift = lastPosition.asArray().map(p => p / distanceConversion);
-  const trajectory = getOriginalTrajectoryAndTilt(velocityArray, orientations);
-  const rotated = rotateZTrajectory(trajectory.translation, velocityArray);
-  const translation = scaleAndTranslate(rotated, arrayLength(velocityArray) * velocityFactor, controllerPositionShift);
-  return {
-    translation: translation.toArray(),
-    rotation: trajectory.rotation
-  };
-}
-
-function animateFlight(scene, frisbee, trajectory) {
-  const {translation, rotation} = trajectory;
-  const xSlide = new BABYLON.Animation("translateX", "position.x", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  const ySlide = new BABYLON.Animation("translateY", "position.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  const zSlide = new BABYLON.Animation("translateZ", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  const xRot = new BABYLON.Animation("xRot", "rotation.x", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  const zRot = new BABYLON.Animation("zRot", "rotation.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  xSlide.setKeys(toPositionFrames(translation[0]));
-  ySlide.setKeys(toPositionFrames(translation[1]));
-  zSlide.setKeys(toPositionFrames(translation[2]));
-  xRot.setKeys(toRotationFrames(rotation[0]));
-  yRot.setKeys(toRotationFrames(rotation[1]));
-  zRot.setKeys(toRotationFrames(rotation[2]));
-  const anim = scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, false);
-  anim.onAnimationEnd = () => setTimeout(() => frisbee.dispose(), 1000);
-  return anim;
-}
-
-function createParticles(scene, emitter) {
-  const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);
-  particleSystem.emitter = emitter;
-  particleSystem.particleTexture = new BABYLON.Texture("flare.png", scene);
-
-  particleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);
-  particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
-  particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
-
-  particleSystem.minSize = 0.2;
-  particleSystem.maxSize = 0.5;
-
-  // Life time of each particle (random between...
-  particleSystem.minLifeTime = 0.3;
-  particleSystem.maxLifeTime = 2;
-
-  // Emission rate
-  particleSystem.emitRate = 5500;
-
-  // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
-  particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
-
-  // Set the gravity of all particles
-  particleSystem.gravity = new BABYLON.Vector3(5, -9.81, 0);
-
-  // Direction of each particle after it has been emitted
-  particleSystem.direction1 = new BABYLON.Vector3(-1000, -1000, -100);
-  particleSystem.direction2 = new BABYLON.Vector3(1000, 1000, 100);
-
-  // Angular speed, in radians
-  particleSystem.minAngularSpeed = -Math.PI;
-  particleSystem.maxAngularSpeed = Math.PI / 2;
-
-  // Speed
-  particleSystem.minEmitPower = 10;
-  particleSystem.maxEmitPower = 20;
-  particleSystem.updateSpeed = 0.005;
-
-  // Start the particle system
-  particleSystem.start();
-}
 
 function setFrisbeeMaterial(frisbee, material) {
   frisbee.getChildMeshes(false, c => c.id.indexOf('TARELKA_Mat.1_0') !== -1)[0].material = material;

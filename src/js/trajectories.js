@@ -1,4 +1,5 @@
-import {arrayLength, normalize} from "./matrix";
+import {arrayLength, normalize, rotateZTrajectory, scaleAndTranslate} from "./matrix";
+import {distanceConversion, velocityFactor} from "./flight";
 
 const WEAK_THRESHOLD = 0.1;
 
@@ -87,4 +88,17 @@ export function getOriginalTrajectoryAndTilt(velocityArray, orientations) {
   const trajectoryTiltName = alphaTrj > 0.2 ? 'tiltLeft' : alphaTrj < -0.2 ? 'tiltRight' : 'straight';
   console.log(trajectoryClassName + ' - ' + trajectoryTiltName);
   return trajectoryClass[trajectoryTiltName];
+}
+
+export function getTrajectory(positions, orientations, velocityProvider) {
+  const lastPosition = positions[positions.length - 1];
+  const velocityArray = velocityProvider(positions);
+  const controllerPositionShift = lastPosition.asArray().map(p => p / distanceConversion);
+  const trajectory = getOriginalTrajectoryAndTilt(velocityArray, orientations);
+  const rotated = rotateZTrajectory(trajectory.translation, velocityArray);
+  const translation = scaleAndTranslate(rotated, arrayLength(velocityArray) * velocityFactor, controllerPositionShift);
+  return {
+    translation: translation.toArray(),
+    rotation: trajectory.rotation
+  };
 }

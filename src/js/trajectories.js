@@ -1,5 +1,3 @@
-import * as math from 'mathjs';
-
 const WEAK_THRESHOLD = 0.1;
 
 export const trajectories = {
@@ -75,77 +73,6 @@ export const trajectories = {
   },
 };
 
-export function rotate(trajectory, velocityArray) {
-  const [vx, vy, vz] = normalize(velocityArray);
-
-  const xBothZero = vy === vx && vx === 0;
-  const xSin = xBothZero ? 0 : -vy;
-  const xCos = xBothZero ? 1 : vx;
-  const xRotation = math.matrix([
-    [1, 0, 0],
-    [0, xCos, -xSin],
-    [0, xSin, xCos]
-  ]);
-
-  const yBothZero = vz === vx && vx === 0;
-  const ySin = yBothZero ? 0 : vx;
-  const yCos = yBothZero ? 1 : vz;
-  const yRotation = math.matrix([
-    [yCos, 0, ySin],
-    [0, 1, 0],
-    [-ySin, 0, yCos]
-  ]);
-
-  const first = math.multiply(xRotation, trajectory);
-  console.log(xCos);
-  console.log(xRotation);
-  console.log(yRotation);
-  console.log(first);
-  return math.multiply(yRotation, first).toArray();
-}
-
-export function arrayLength(point) {
-  const [x, y, z] = point;
-  return Math.sqrt(x * x + y * y + z * z);
-}
-
-export function pointToArray(point) {
-  return [point.x, point.y, point.z];
-}
-
-export function findVelocity(traceP, pointNumber) {
-  if (traceP.length < 2) return [0, 0, 1];
-
-  const lastPoints = traceP.slice(-pointNumber);
-  const velocities = lastPoints.slice(1).map((p, i) => {
-    return {
-      x: p.x - lastPoints[i].x,
-      y: p.y - lastPoints[i].y,
-      z: p.z - lastPoints[i].z
-    };
-  });
-  // const lengths = velocities.map(vectorSquareLength);
-  // const indexOfMaxVelocity = lengths.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-  const indexOfMaxVelocity = velocities.length - 1;
-  let average;
-  if (indexOfMaxVelocity === 0) {
-    average = averagePoint(velocities.slice(indexOfMaxVelocity, indexOfMaxVelocity + 1));
-  } else if (indexOfMaxVelocity === velocities.length - 1) {
-    average = averagePoint(velocities.slice(indexOfMaxVelocity - 1, indexOfMaxVelocity));
-  } else {
-    average = averagePoint(velocities.slice(indexOfMaxVelocity - 1, indexOfMaxVelocity + 1));
-  }
-  return pointToArray(average);
-}
-
-function averagePoint(points) {
-  return points.reduce((average, point) => average ? {
-    x: average.x + point.x / 2,
-    y: average.y + point.y / 2,
-    z: average.z + point.z / 2
-  } : point, undefined);
-}
-
 export function getTrajectory(velocityArray, orientations) {
   const absoluteOrientation = orientations[orientations.length - 1].asArray();
   absoluteOrientation[1] += 0.2;
@@ -166,10 +93,4 @@ export function getTrajectory(velocityArray, orientations) {
   const trajectoryTiltName = alphaTrj > 0.2 ? 'tiltLeft' : alphaTrj < -0.2 ? 'tiltRight' : 'straight';
   console.log(trajectoryClassName + ' - ' + trajectoryTiltName);
   return trajectoryClass[trajectoryTiltName];
-}
-
-function normalize(array) {
-  const length = arrayLength(array);
-  if (length === 0) return array;
-  return array.map(v => v / length);
 }

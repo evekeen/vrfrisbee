@@ -1,5 +1,4 @@
 import * as math from 'mathjs';
-import {atan} from "mathjs";
 
 const WEAK_THRESHOLD = 0.1;
 
@@ -76,48 +75,33 @@ export const trajectories = {
   },
 };
 
-const correction90 = math.matrix([
-  [0, 0, -1],
-  [0, 1, 0],
-  [1, 0, 0]
-]);
+export function rotate(trajectory, velocityArray) {
+  const [vx, vy, vz] = normalize(velocityArray);
 
-export function rotate(trajectory, velocityArray, scale) {
-  const [vx, vy, vz] = velocityArray.map(v => v * scale);
-  const ySin = vx;
-  const yCos = vz;
+  const xBothZero = vy === vx && vx === 0;
+  const xSin = xBothZero ? 0 : -vy;
+  const xCos = xBothZero ? 1 : vx;
+  const xRotation = math.matrix([
+    [1, 0, 0],
+    [0, xCos, -xSin],
+    [0, xSin, xCos]
+  ]);
+
+  const yBothZero = vz === vx && vx === 0;
+  const ySin = yBothZero ? 0 : vx;
+  const yCos = yBothZero ? 1 : vz;
   const yRotation = math.matrix([
     [yCos, 0, ySin],
     [0, 1, 0],
     [-ySin, 0, yCos]
   ]);
 
-  const xSin = -vy;
-  const xCos = vz;
-  const xRotation = math.matrix([
-    [1, 0, 0],
-    [0, xCos, -xSin],
-    [0, xSin, xCos]
-  ]);
-  //
-  // const zSin = y;
-  // const zCos = x;
-  // const zRotation = math.matrix([
-  //   [zCos, -zSin, 0],
-  //   [zSin, zCos, 0],
-  //   [0, 0, 1]
-  // ]);
-
-
-  // let rotation = math.multiply(yRotation, xRotation);
-  // rotation = math.multiply(zRotation, rotation);
-  let first = math.multiply(xRotation, trajectory);
+  const first = math.multiply(xRotation, trajectory);
+  console.log(xCos);
+  console.log(xRotation);
+  console.log(yRotation);
+  console.log(first);
   return math.multiply(yRotation, first).toArray();
-}
-
-export function vectorSquareLength(point) {
-  const {x, y, z} = point;
-  return x * x + y * y + z * z;
 }
 
 export function arrayLength(point) {
@@ -162,13 +146,11 @@ function averagePoint(points) {
   } : point, undefined);
 }
 
-const referenceOrientationForehand = [0.9477840065956116, 0.17129312455654144, -0.2690058648586273];
-
 export function getTrajectory(velocityArray, orientations) {
   const absoluteOrientation = orientations[orientations.length - 1].asArray();
   absoluteOrientation[1] += 0.2;
   const velocityLength = arrayLength(velocityArray);
-  const velocityNormalized = velocityArray.map(v => v / velocityLength);
+  const velocityNormalized = normalize(velocityArray);
   // const orientation = absoluteOrientation.map((v, i) => v - referenceOrientationForehand[i]);
   // const alphaAbsolute = Math.atan(absoluteOrientation[1] / absoluteOrientation[0]);
   const orientationVelocity = absoluteOrientation.map((v, i) => v - velocityNormalized[i]);
@@ -184,4 +166,10 @@ export function getTrajectory(velocityArray, orientations) {
   const trajectoryTiltName = alphaTrj > 0.2 ? 'tiltLeft' : alphaTrj < -0.2 ? 'tiltRight' : 'straight';
   console.log(trajectoryClassName + ' - ' + trajectoryTiltName);
   return trajectoryClass[trajectoryTiltName];
+}
+
+function normalize(array) {
+  const length = arrayLength(array);
+  if (length === 0) return array;
+  return array.map(v => v / length);
 }

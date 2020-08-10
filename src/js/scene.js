@@ -7,7 +7,7 @@ import * as cannon from 'cannon';
 const frameRate = 30;
 const originalMaxTime = 3;
 const playbackSpeed = 0.7;
-const distanceConversion = 5;
+const distanceConversion = 50;
 const discretization = 10;
 const velocityScale = 10;
 
@@ -216,7 +216,7 @@ function throwFrisbee(scene, frisbee, positions, orientations) {
   const velocityArray = findVelocity(positions, 8);
   const trajectory = getTrajectory(velocityArray, orientations);
   const [alpha_x, alpha_y, alpha_z] = trajectory.rotation;
-  const translation = rotate(trajectory.translation, velocityArray, velocityScale);
+  const translation = rotate(trajectory.translation, velocityArray);
   const [x, y, z] = translation;
   const xTranslated = x.map(p => p + lastPosition.x / distanceConversion);
   const yTranslated = y.map(p => p + lastPosition.y / distanceConversion);

@@ -9,8 +9,8 @@ export function createParticles(scene, emitter) {
   particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, 1.0);
   particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
 
-  particleSystem.minSize = 0.2;
-  particleSystem.maxSize = 0.5;
+  particleSystem.minSize = 0.05;
+  particleSystem.maxSize = 0.1;
 
   // Life time of each particle (random between...
   particleSystem.minLifeTime = 0.3;

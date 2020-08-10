@@ -39,5 +39,5 @@ const frameRate = 30;
 const originalMaxTime = 3;
 const playbackSpeed = 0.7;
 export const distanceConversion = 10;
-export const velocityFactor = 5;
+export const velocityFactor = 1;
 export const discretization = 10;

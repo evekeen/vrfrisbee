@@ -1,16 +1,23 @@
 import * as BABYLON from 'babylonjs';
 import {CannonJSPlugin} from 'babylonjs';
 import 'babylonjs-loaders';
-import {findAverageVelocity, findLastVelocity} from "./matrix";
+import {findAverageVelocity} from "./matrix";
 import * as cannon from 'cannon';
 import {createParticles} from "./particles";
 import {animateFlight} from "./flight";
 import {getTrajectory} from "./trajectories";
+
 const collisionFrames = 150;
 
 const frisbeeScale = 0.00002;
 const frisbees = [];
 let frisbeeCounter = 0;
+
+const ray = BABYLON.Ray.Zero();
+let pressed = false;
+let traceP = [];
+let frisbeeOrientation = undefined;
+let frisbeeRotation = undefined;
 
 export const createScene = async function (engine, canvas) {
   const scene = new BABYLON.Scene(engine);
@@ -135,28 +142,21 @@ export const createScene = async function (engine, canvas) {
     });
   });
 
-  const ray = BABYLON.Ray.Zero();
-  let pressed = false;
-  let traceP = [];
-  let traceR = [];
-
-  function listenToComponent(component) {
+  function listenToComponent(component, controller) {
     component && component.onButtonStateChangedObservable.add(() => {
       if (component.changes.pressed) {
         if (component.pressed) {
           pressed = true;
           traceP = [];
-          traceR = [];
           if (frisbee) {
             frisbee.setEnabled(true);
             frisbee.position = ray.origin.clone();
-            frisbee.rotation = BABYLON.Vector3.Zero();
+            setRotationFrom(controller);
           }
         } else {
           pressed = false;
           console.log(traceP);
-          console.log(traceR);
-          frisbee && throwFrisbee(scene, frisbee, traceP, traceR);
+          frisbee && throwFrisbee();
         }
       }
     });
@@ -165,19 +165,18 @@ export const createScene = async function (engine, canvas) {
   xr.input.onControllerAddedObservable.add(controller => {
     if (controller.inputSource.handedness === 'right') {
       controller.onMotionControllerInitObservable.add(() => {
-        listenToComponent(controller.motionController.getComponent('xr-standard-squeeze'));
-        listenToComponent(controller.motionController.getMainComponent());
+        listenToComponent(controller.motionController.getComponent('xr-standard-squeeze'), controller);
+        listenToComponent(controller.motionController.getMainComponent(), controller);
       });
 
       const frameObserver = xr.baseExperience.sessionManager.onXRFrameObservable.add(() => {
         controller.getWorldPointerRayToRef(ray, true);
         if (frisbee && pressed) {
           const position = ray.origin.clone();
-          const direction = ray.direction.clone();
+          frisbeeOrientation = ray.direction.clone();
           traceP.push(position);
-          traceR.push(direction);
           frisbee.position = position.clone();
-          frisbee.rotation = BABYLON.Vector3.Zero();//correctFrisbeeOrientation(direction);
+          setRotationFrom(controller);
         }
       });
 
@@ -187,14 +186,26 @@ export const createScene = async function (engine, canvas) {
     }
   });
 
-  function throwFrisbee(scene, frisbee, positions, orientations) {
-    frisbee.setEnabled(false);
-    const f1 = cloneFrisbee(frisbee);
-    const f2 = cloneFrisbee(frisbee);
-    setFrisbeeMaterial(f2, pMaterial);
-    animateFlight(scene, f1, getTrajectory(positions, orientations, findLastVelocity));
-    animateFlight(scene, f2, getTrajectory(positions, orientations, (points) => findAverageVelocity(points, 4)));
+  function setRotationFrom(controller) {
+    const rotationQuaternion = controller.pointer.rotationQuaternion;
+    frisbeeRotation = rotationQuaternion.toEulerAngles();
+    frisbee.rotation = new BABYLON.Vector3(frisbeeRotation.x, frisbeeRotation.y, frisbeeRotation.z);
   }
+
+  function throwFrisbee() {
+    frisbee.setEnabled(false);
+    // const f1 = cloneFrisbee(frisbee);
+    const f2 = cloneFrisbee(frisbee);
+    // setFrisbeeMaterial(f2, pMaterial);
+    // animateFlight(scene, f1, getTrajectory(positions, orientations, findLastVelocity));
+    const trajectory = getTrajectory(traceP, frisbeeOrientation, (points) => findAverageVelocity(points, 3));
+    animateFlight(scene, f2, trajectory);
+  }
+
+  // await scene.debugLayer.show({
+  //   overlay: false,
+  //   globalRoot: document.getElementById('frisbee')
+  // });
 
   return scene;
 };

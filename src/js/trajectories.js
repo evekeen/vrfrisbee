@@ -76,8 +76,8 @@ export const trajectories = {
   },
 };
 
-export function getOriginalTrajectoryAndTilt(velocityArray, orientations) {
-  const absoluteOrientation = correctFrisbeeOrientation(orientations[orientations.length - 1]);
+export function getOriginalTrajectoryAndTilt(velocityArray, frisbeeOrientation) {
+  const absoluteOrientation = correctFrisbeeOrientation(frisbeeOrientation);
   const velocityLength = arrayLength(velocityArray);
   const velocityNormalized = normalize(velocityArray);
   const orientationVelocity = absoluteOrientation.map((v, i) => v - velocityNormalized[i]);
@@ -89,11 +89,19 @@ export function getOriginalTrajectoryAndTilt(velocityArray, orientations) {
   return trajectoryClass[trajectoryTiltName];
 }
 
-export function getTrajectory(positions, orientations, velocityProvider) {
+export function getTrajectory(positions, frisbeeOrientation, velocityProvider) {
   const lastPosition = positions[positions.length - 1];
-  const velocityArray = velocityProvider(positions);
+  let velocityArray = velocityProvider(positions);
+  if (arrayLength(velocityArray) < 0.1) {
+    const randomFactor = 0.1
+    velocityArray = [
+      Math.random() * randomFactor - randomFactor / 2,
+      Math.random() * randomFactor - randomFactor / 2,
+      positions.length / 100
+    ];
+  }
   const controllerPositionShift = lastPosition.asArray().map(p => p / distanceConversion);
-  const trajectory = getOriginalTrajectoryAndTilt(velocityArray, orientations);
+  const trajectory = getOriginalTrajectoryAndTilt(velocityArray, frisbeeOrientation);
   const rotated = rotateZTrajectory(trajectory.translation, velocityArray);
   const translation = scaleAndTranslate(rotated, arrayLength(velocityArray) * velocityFactor, controllerPositionShift);
   return {

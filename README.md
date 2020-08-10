@@ -16,3 +16,7 @@ npm run build
 Copy `src/static/*` to `dist/`
 
 Open `dist/index.html` in browser
+
+## Model
+
+[FrisPy](https://github.com/tmcclintock/FrisPy) library has been used in order to calculate a frisbee flight trajectory

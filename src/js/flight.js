@@ -15,9 +15,7 @@ export function animateFlight(scene, frisbee, trajectory) {
   xRot.setKeys(toRotationFrames(rotation[0]));
   yRot.setKeys(toRotationFrames(rotation[1]));
   zRot.setKeys(toRotationFrames(rotation[2]));
-  const anim = scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, false);
-  anim.onAnimationEnd = () => setTimeout(() => frisbee.dispose(), 1000);
-  return anim;
+  return scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 2 * frameRate / discretization / playbackSpeed, false);
 }
 
 function toPositionFrames(points, bias) {

@@ -199,7 +199,10 @@ export const createScene = async function (engine, canvas) {
     // setFrisbeeMaterial(f2, pMaterial);
     // animateFlight(scene, f1, getTrajectory(positions, orientations, findLastVelocity));
     const trajectory = getTrajectory(traceP, frisbeeOrientation, (points) => findAverageVelocity(points, 3));
-    animateFlight(scene, f2, trajectory);
+    animateFlight(scene, f2, trajectory).onAnimationEnd = () => {
+      f2.isVisible = false;
+      setTimeout(() => f2.dispose(), 1000);
+    };
   }
 
   // await scene.debugLayer.show({

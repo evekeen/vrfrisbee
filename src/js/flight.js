@@ -36,7 +36,7 @@ function toRotationFrames(points) {
 }
 
 const frameRate = 30;
-const originalMaxTime = 3;
+const originalMaxTime = 5;
 const playbackSpeed = 0.7;
 export const distanceConversion = 10;
 export const velocityFactor = 1.3;

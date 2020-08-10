@@ -6,21 +6,21 @@ describe('Rotate', function () {
     const direction = [0, 0, 1];
     const trajectory = [[0, 0, 0], [0, 0, 1], [0, 1, 2]];
     const res = rotateZTrajectory(trajectory, direction);
-    expect(res).to.eql([[0, 0, 0], [0, 0, 1], [0, 1, 2]]);
+    expect(roundCoordinates(res)).to.eql([[0, 0, 0], [0, 0, 1], [0, 1, 2]]);
   });
 
   it('should rotateZTrajectory -90 degrees Y', function () {
     const direction = [1, 0, 0];
     const trajectory = [[0, 0, 0], [0, 0, 0], [0, 1, 2]];
     const res = rotateZTrajectory(trajectory, direction);
-    expect(res).to.eql([[0, 1, 2], [0, 0, 0], [0, 0, 0]]);
+    expect(roundCoordinates(res)).to.eql([[0, 1, 2], [0, 0, 0], [0, 0, 0]]);
   });
 
   it('should rotateZTrajectory 90 degrees X', function () {
     const direction = [0, 1, 0];
     const trajectory = [[0, 0, 0], [0, 0, 0], [0, 1, 2]];
     const res = rotateZTrajectory(trajectory, direction);
-    expect(res).to.eql([[0, 0, 0], [0, 1, 2], [0, 0, 0]]);
+    expect(roundCoordinates(res)).to.eql([[0, 0, 0], [0, 1, 2], [0, 0, 0]]);
   });
 
   it('should rotateZTrajectory -45 degrees Y', function () {
@@ -60,5 +60,5 @@ describe('Rotate', function () {
 });
 
 function roundCoordinates(coordinates) {
-  return coordinates.map(c => c.map(e =>  Math.round(e * 100) / 100));
+  return coordinates.toArray().map(c => c.map(e =>  Math.round(e * 100) / 100));
 }

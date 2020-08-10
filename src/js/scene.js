@@ -1,7 +1,7 @@
 import * as BABYLON from 'babylonjs';
 import {CannonJSPlugin} from 'babylonjs';
 import 'babylonjs-loaders';
-import {findAverageVelocity, findLastVelocity, rotateZTrajectory} from "./matrix";
+import {arrayLength, findAverageVelocity, findLastVelocity, rotateZTrajectory, scaleAndTranslate} from "./matrix";
 import {getOriginalTrajectoryAndTilt} from "./trajectories";
 import * as cannon from 'cannon';
 
@@ -9,6 +9,7 @@ const frameRate = 30;
 const originalMaxTime = 3;
 const playbackSpeed = 0.7;
 const distanceConversion = 10;
+const velocityFactor = 5;
 const discretization = 10;
 
 const frisbeeScale = 0.00005;
@@ -219,14 +220,12 @@ function toRotationFrames(points) {
 function getTrajectory(positions, orientations, velocityProvider) {
   const lastPosition = positions[positions.length - 1];
   const velocityArray = velocityProvider(positions);
+  const controllerPositionShift = lastPosition.asArray().map(p => p / distanceConversion);
   const trajectory = getOriginalTrajectoryAndTilt(velocityArray, orientations);
-  const translation = rotateZTrajectory(trajectory.translation, velocityArray);
-  const [x, y, z] = translation;
-  const xTranslated = x.map(p => p + lastPosition.x / distanceConversion);
-  const yTranslated = y.map(p => p + lastPosition.y / distanceConversion);
-  const zTranslated = z.map(p => p + lastPosition.z / distanceConversion);
+  const rotated = rotateZTrajectory(trajectory.translation, velocityArray);
+  const translation = scaleAndTranslate(rotated, arrayLength(velocityArray) * velocityFactor, controllerPositionShift);
   return {
-    translation: [xTranslated, yTranslated, zTranslated],
+    translation: translation.toArray(),
     rotation: trajectory.rotation
   };
 }

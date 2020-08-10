@@ -17,7 +17,23 @@ export function rotateZTrajectory(trajectory, velocityArray) {
   ]);
 
   const first = math.multiply(xRotation, trajectory);
-  return math.multiply(yRotation, first).toArray();
+  return math.multiply(yRotation, first);
+}
+
+export function scaleAndTranslate(trajectoryMatrix, scaleFactor, shiftArray) {
+  const transform = math.matrix([
+    [scaleFactor, 0, 0, shiftArray[0]],
+    [0, scaleFactor, 0, shiftArray[1]],
+    [0, 0, scaleFactor, shiftArray[2]],
+    [0, 0, 0, 1]
+  ]);
+  const size = trajectoryMatrix.size
+    ? trajectoryMatrix.size()[1]
+    : math.subset(math.size(trajectoryMatrix), math.index(1));
+  const ones = math.ones(size);
+  const extended = math.subset(trajectoryMatrix, math.index(3, math.range(0, size)), ones);
+  const product = math.multiply(transform, extended);
+  return math.subset(product, math.index(math.range(0, 3), math.range(0, size)));
 }
 
 function getProjectionsNormalized(sin, cos) {

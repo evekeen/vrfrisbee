@@ -12,7 +12,7 @@ const distanceConversion = 10;
 const velocityFactor = 5;
 const discretization = 10;
 
-const frisbeeScale = 0.00005;
+const frisbeeScale = 0.00002;
 const frisbees = [];
 let frisbeeCounter = 0;
 
@@ -147,29 +147,33 @@ export const createScene = async function (engine, canvas) {
   let traceP = [];
   let traceR = [];
 
+  function listenToComponent(component) {
+    component && component.onButtonStateChangedObservable.add(() => {
+      if (component.changes.pressed) {
+        if (component.pressed) {
+          pressed = true;
+          traceP = [];
+          traceR = [];
+          if (frisbee) {
+            frisbee.setEnabled(true);
+            frisbee.position = ray.origin.clone();
+            frisbee.rotation = BABYLON.Vector3.Zero();
+          }
+        } else {
+          pressed = false;
+          console.log(traceP);
+          console.log(traceR);
+          frisbee && throwFrisbee(scene, frisbee, traceP, traceR);
+        }
+      }
+    });
+  }
+
   xr.input.onControllerAddedObservable.add(controller => {
     if (controller.inputSource.handedness === 'right') {
       controller.onMotionControllerInitObservable.add(() => {
-        const component = controller.motionController.getComponent('xr-standard-squeeze') || controller.motionController.getMainComponent();
-        component.onButtonStateChangedObservable.add(() => {
-          if (component.changes.pressed) {
-            if (component.pressed) {
-              pressed = true;
-              traceP = [];
-              traceR = [];
-              if (frisbee) {
-                frisbee.setEnabled(true);
-                frisbee.position = ray.origin.clone();
-                frisbee.rotation = BABYLON.Vector3.Zero();
-              }
-            } else {
-              pressed = false;
-              console.log(traceP);
-              console.log(traceR);
-              frisbee && throwFrisbee(scene, frisbee, traceP, traceR);
-            }
-          }
-        });
+        listenToComponent(controller.motionController.getComponent('xr-standard-squeeze'));
+        listenToComponent(controller.motionController.getMainComponent());
       });
 
       const frameObserver = xr.baseExperience.sessionManager.onXRFrameObservable.add(() => {

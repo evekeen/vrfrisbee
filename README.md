@@ -1,7 +1,7 @@
 # Frisbee VR
 
-The is a prototype of a game of throwing frisbee in VR.
-It runs in browser using WebXR.
+This is a prototype of a game of throwing frisbee in VR.
+It runs in browser using WebXR (BabylonJS).
 
 Right now in order to use it you must have any VR headset with controllers like Oculus Quest.
 There might be version to use without VR headset in future.

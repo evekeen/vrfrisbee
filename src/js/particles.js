@@ -1,4 +1,4 @@
-import BABYLON from "babylonjs";
+import * as BABYLON from 'babylonjs';
 
 export function createParticles(scene, emitter) {
   const particleSystem = new BABYLON.ParticleSystem("particles", 2000, scene);

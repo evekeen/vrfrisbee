@@ -177,7 +177,7 @@ export const createScene = async function (engine, canvas) {
           traceP.push(position);
           traceR.push(direction);
           frisbee.position = position.clone();
-          frisbee.rotation = BABYLON.Vector3.Zero();
+          frisbee.rotation = BABYLON.Vector3.Zero();//correctFrisbeeOrientation(direction);
         }
       });
 

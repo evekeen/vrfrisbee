@@ -77,8 +77,7 @@ export const trajectories = {
 };
 
 export function getOriginalTrajectoryAndTilt(velocityArray, orientations) {
-  const absoluteOrientation = orientations[orientations.length - 1].asArray();
-  absoluteOrientation[1] += 0.2;
+  const absoluteOrientation = correctFrisbeeOrientation(orientations[orientations.length - 1]);
   const velocityLength = arrayLength(velocityArray);
   const velocityNormalized = normalize(velocityArray);
   const orientationVelocity = absoluteOrientation.map((v, i) => v - velocityNormalized[i]);
@@ -101,4 +100,10 @@ export function getTrajectory(positions, orientations, velocityProvider) {
     translation: translation.toArray(),
     rotation: trajectory.rotation
   };
+}
+
+export function correctFrisbeeOrientation(orientationVector) {
+  const orientation = orientationVector.asArray();
+  orientation[1] += 0.2;
+  return orientation;
 }

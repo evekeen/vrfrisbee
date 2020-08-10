@@ -37,17 +37,10 @@ export function pointToArray(point) {
   return [point.x, point.y, point.z];
 }
 
-export function findVelocity(traceP, pointNumber) {
+export function findLastVelocity(traceP, pointNumber) {
   if (traceP.length < 2) return [0, 0, 1];
 
-  const lastPoints = traceP.slice(-pointNumber);
-  const velocities = lastPoints.slice(1).map((p, i) => {
-    return {
-      x: p.x - lastPoints[i].x,
-      y: p.y - lastPoints[i].y,
-      z: p.z - lastPoints[i].z
-    };
-  });
+  const velocities = differentiate(traceP, pointNumber);
   // const lengths = velocities.map(vectorSquareLength);
   // const indexOfMaxVelocity = lengths.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
   const indexOfMaxVelocity = velocities.length - 1;
@@ -60,6 +53,24 @@ export function findVelocity(traceP, pointNumber) {
     average = averagePoint(velocities.slice(indexOfMaxVelocity - 1, indexOfMaxVelocity + 1));
   }
   return pointToArray(average);
+}
+
+export function findAverageVelocity(traceP, pointNumber) {
+  if (traceP.length < 2) return [0, 0, 1];
+  const velocities = differentiate(traceP, pointNumber);
+  const average = averagePoint(velocities);
+  return pointToArray(average);
+}
+
+function differentiate(traceP, pointNumber) {
+  const lastPoints = traceP.slice(-pointNumber);
+  return lastPoints.slice(1).map((p, i) => {
+    return {
+      x: p.x - lastPoints[i].x,
+      y: p.y - lastPoints[i].y,
+      z: p.z - lastPoints[i].z
+    };
+  });
 }
 
 function averagePoint(points) {

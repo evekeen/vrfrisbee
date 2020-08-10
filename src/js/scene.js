@@ -1,8 +1,8 @@
 import * as BABYLON from 'babylonjs';
 import {CannonJSPlugin} from 'babylonjs';
 import 'babylonjs-loaders';
-import {findVelocity, rotateZTrajectory} from "./matrix";
-import {getTrajectory} from "./trajectories";
+import {findAverageVelocity, findLastVelocity, rotateZTrajectory} from "./matrix";
+import {getOriginalTrajectoryAndTilt} from "./trajectories";
 import * as cannon from 'cannon';
 
 const frameRate = 30;
@@ -10,7 +10,6 @@ const originalMaxTime = 3;
 const playbackSpeed = 0.7;
 const distanceConversion = 10;
 const discretization = 10;
-const velocityScale = 10;
 
 const frisbeeScale = 0.00005;
 
@@ -99,7 +98,7 @@ export const createScene = async function (engine, canvas) {
     frisbee.rotation = new BABYLON.Vector3(0, 0, 0);
     frisbee.scaling = new BABYLON.Vector3(frisbeeScale, frisbeeScale, frisbeeScale);
     frisbee.checkCollisions = true;
-    frisbee.getChildMeshes(false, c => c.id === 'TARELKA_Mat.1_0')[0].material = fMaterial;
+    setFrisbeeMaterial(frisbee, fMaterial);
     frisbee.setEnabled(false);
 
     createParticles(scene, frisbee);
@@ -187,6 +186,18 @@ export const createScene = async function (engine, canvas) {
     }
   });
 
+  function throwFrisbee(scene, frisbee, positions, orientations) {
+    frisbee.setEnabled(false);
+    const f1 = frisbee.clone();
+    animateFlight(scene, f1, getTrajectory(positions, orientations, (points) => findLastVelocity(points, 8)));
+    const f2 = frisbee.clone();
+    setFrisbeeMaterial(f2, pMaterial);
+    animateFlight(scene, f2, getTrajectory(positions, orientations, (points) => findAverageVelocity(points, 8))).onAnimationEnd = () => {
+      f2.dispose();
+      frisbee.setEnabled(true);
+    }
+  }
+
   return scene;
 };
 
@@ -205,30 +216,38 @@ function toRotationFrames(points) {
   }));
 }
 
-function throwFrisbee(scene, frisbee, positions, orientations) {
+function getTrajectory(positions, orientations, velocityProvider) {
+  const lastPosition = positions[positions.length - 1];
+  const velocityArray = velocityProvider(positions);
+  const trajectory = getOriginalTrajectoryAndTilt(velocityArray, orientations);
+  const translation = rotateZTrajectory(trajectory.translation, velocityArray);
+  const [x, y, z] = translation;
+  const xTranslated = x.map(p => p + lastPosition.x / distanceConversion);
+  const yTranslated = y.map(p => p + lastPosition.y / distanceConversion);
+  const zTranslated = z.map(p => p + lastPosition.z / distanceConversion);
+  return {
+    translation: [xTranslated, yTranslated, zTranslated],
+    rotation: trajectory.rotation
+  };
+}
+
+function animateFlight(scene, frisbee, trajectory) {
+  const {translation, rotation} = trajectory;
   const xSlide = new BABYLON.Animation("translateX", "position.x", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const ySlide = new BABYLON.Animation("translateY", "position.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zSlide = new BABYLON.Animation("translateZ", "position.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const xRot = new BABYLON.Animation("xRot", "rotation.x", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const yRot = new BABYLON.Animation("yRot", "rotation.y", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   const zRot = new BABYLON.Animation("zRot", "rotation.z", frameRate, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-
-  const lastPosition = positions[positions.length - 1];
-  const velocityArray = findVelocity(positions, 8);
-  const trajectory = getTrajectory(velocityArray, orientations);
-  const [alpha_x, alpha_y, alpha_z] = trajectory.rotation;
-  const translation = rotateZTrajectory(trajectory.translation, velocityArray);
-  const [x, y, z] = translation;
-  const xTranslated = x.map(p => p + lastPosition.x / distanceConversion);
-  const yTranslated = y.map(p => p + lastPosition.y / distanceConversion);
-  const zTranslated = z.map(p => p + lastPosition.z / distanceConversion);
-  xSlide.setKeys(toPositionFrames(xTranslated));
-  ySlide.setKeys(toPositionFrames(yTranslated));
-  zSlide.setKeys(toPositionFrames(zTranslated));
-  xRot.setKeys(toRotationFrames(alpha_x));
-  yRot.setKeys(toRotationFrames(alpha_y));
-  zRot.setKeys(toRotationFrames(alpha_z));
-  scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, true);
+  xSlide.setKeys(toPositionFrames(translation[0]));
+  ySlide.setKeys(toPositionFrames(translation[1]));
+  zSlide.setKeys(toPositionFrames(translation[2]));
+  xRot.setKeys(toRotationFrames(rotation[0]));
+  yRot.setKeys(toRotationFrames(rotation[1]));
+  zRot.setKeys(toRotationFrames(rotation[2]));
+  const anim = scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 0.5 * frameRate / playbackSpeed, true);
+  anim.onAnimationEnd = () => frisbee.dispose();
+  return anim;
 }
 
 function createParticles(scene, emitter) {
@@ -271,4 +290,8 @@ function createParticles(scene, emitter) {
 
   // Start the particle system
   particleSystem.start();
+}
+
+function setFrisbeeMaterial(frisbee, material) {
+  frisbee.getChildMeshes(false, c => c.id.indexOf('TARELKA_Mat.1_0') !== -1)[0].material = material;
 }

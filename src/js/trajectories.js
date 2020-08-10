@@ -75,21 +75,13 @@ export const trajectories = {
   },
 };
 
-export function getTrajectory(velocityArray, orientations) {
+export function getOriginalTrajectoryAndTilt(velocityArray, orientations) {
   const absoluteOrientation = orientations[orientations.length - 1].asArray();
   absoluteOrientation[1] += 0.2;
   const velocityLength = arrayLength(velocityArray);
   const velocityNormalized = normalize(velocityArray);
-  // const orientation = absoluteOrientation.map((v, i) => v - referenceOrientationForehand[i]);
-  // const alphaAbsolute = Math.atan(absoluteOrientation[1] / absoluteOrientation[0]);
   const orientationVelocity = absoluteOrientation.map((v, i) => v - velocityNormalized[i]);
-  // const xAlpha = Math.atan(orientation[1] / orientation[0]);
   const alphaTrj = Math.atan(orientationVelocity[1] / orientationVelocity[0]);
-  console.log('velocityLength: ' + velocityLength);
-  console.log('absoluteOrientation: ' + absoluteOrientation);
-  console.log('velocityNormalized:  ' + velocityNormalized);
-  console.log('orientationVelocity:  ' + orientationVelocity);
-  console.log('alphaTrj: ' + alphaTrj);
   const trajectoryClass = velocityLength < WEAK_THRESHOLD ? trajectories.weak : trajectories.strong;
   const trajectoryClassName = trajectoryClass === trajectories.weak ? 'weak' : 'strong';
   const trajectoryTiltName = alphaTrj > 0.2 ? 'tiltLeft' : alphaTrj < -0.2 ? 'tiltRight' : 'straight';

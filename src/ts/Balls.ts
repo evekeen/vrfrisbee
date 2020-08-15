@@ -4,13 +4,9 @@ import {Scene} from "babylonjs/scene";
 
 export function initBalls(scene: Scene, numberOfTrees: number = 40): Promise<CollidingCollection> {
   const normal = new StandardMaterial("ball", scene);
-  normal.diffuseColor = new Color3(0, 0.7, 0.1);
-  normal.specularColor = new Color3(0.5, 0.6, 0.87);
-  normal.emissiveColor = new Color3(0, 0.3, 0.3);
-  normal.ambientColor = new Color3(0.23, 0.98, 0.53);
-
+  normal.emissiveColor = Color3.FromHexString('#736f00');
   const collided = normal.clone("ball-collided");
-  collided.emissiveColor = new Color3(0, 1, 0);
+  collided.emissiveColor = Color3.FromHexString('#fff64d');
 
   const original = MeshBuilder.CreateSphere("sphere", {diameter: 1}, scene);
   original.material = normal;
@@ -27,7 +23,7 @@ export function initBalls(scene: Scene, numberOfTrees: number = 40): Promise<Col
 
 function setupBall(original: AbstractMesh, i: number): AbstractMesh {
   const ball = original.clone('ball' + i, null)!!;
-  const scale = Math.random() + 1;
+  const scale = Math.random() * SCALE_RANGE + 1;
   ball.position = Vector3.FromArray(nextTreeCoordinates());
   ball.scaling = new Vector3(scale, scale, scale);
   ball.computeWorldMatrix();
@@ -35,6 +31,7 @@ function setupBall(original: AbstractMesh, i: number): AbstractMesh {
   return ball;
 }
 
+const SCALE_RANGE = 2;
 const RANGE_DISTANCE = 20;
 const MIN_DISTANCE = 15;
 const RANGE_Y = 10;

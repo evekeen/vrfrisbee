@@ -28,7 +28,7 @@ export function initForest(assetsManager: AssetsManager, numberOfTrees: number =
 
 function setupTree(original: AbstractMesh, i: number): AbstractMesh {
   const root = original.clone('tree' + i, null)!!;
-  const scaleIncrease = Math.random();
+  const scaleIncrease = Math.random() * SCALE_RANGE;
   const scale = TREE_SCALE_BASE * (scaleIncrease + 1);
   const coordinates = nextTreeCoordinates();
   coordinates[1] -= scaleIncrease;
@@ -42,11 +42,12 @@ function setupTree(original: AbstractMesh, i: number): AbstractMesh {
 }
 
 const TREE_SCALE_BASE = 0.3;
-const TREE_POSITION_RANGE = 30;
-const MIN_TREE_DISTANCE = 5;
+const SCALE_RANGE = 2;
+const RANGE_DISTANCE = 30;
+const MIN_DISTANCE = 5;
 
 function nextTreeCoordinates(): number[] {
-  const distance = Math.random() * TREE_POSITION_RANGE + MIN_TREE_DISTANCE;
+  const distance = Math.random() * RANGE_DISTANCE + MIN_DISTANCE;
   const angle = Math.random() * Math.PI * 2;
   const x = Math.cos(angle) * distance;
   const z = Math.sin(angle) * distance;

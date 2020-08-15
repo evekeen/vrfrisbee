@@ -1,4 +1,5 @@
 const path = require('path');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 
 module.exports = (env, argv) => {
   return {
@@ -26,7 +27,7 @@ module.exports = (env, argv) => {
           loader: "awesome-typescript-loader",
           options : {
             reportFiles: [
-              'src/js/**/*.{ts,tsx}'
+              'src/ts/**/*.{ts,tsx}'
             ]
           },
         },
@@ -39,7 +40,7 @@ module.exports = (env, argv) => {
     resolve: {
       extensions: ['.ts', '.tsx', '.js']
     },
-    entry: './src/js/index.ts',
+    entry: './src/ts/index.ts',
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: '[name].bundle.js'
@@ -54,6 +55,7 @@ module.exports = (env, argv) => {
     },
     externals: {
       oimo: true
-    }
+    },
+    plugins: [new CleanWebpackPlugin()]
   };
 };

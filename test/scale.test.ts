@@ -1,4 +1,4 @@
-import {scaleAndTranslate} from '../src/js/matrix';
+import {scaleAndTranslate} from '../src/ts/matrix';
 import {expect} from 'chai';
 import * as mathjs from "mathjs";
 

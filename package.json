@@ -4,7 +4,7 @@
   "version": "0.3.0",
   "license": "MIT",
   "scripts": {
-    "test": "webpack --config webpack.config.test.js && mocha --exit dist/tests.test.js",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'test/**/*.ts'",
     "build": "webpack",
     "start": "webpack-dev-server",
     "start-math": "webpack-dev-server --config webpack.config.math.js",
@@ -12,7 +12,9 @@
     "ghpages": "ghpages"
   },
   "devDependencies": {
+    "@types/chai": "4.2.12",
     "@types/mathjs": "6.0.5",
+    "@types/mocha": "8.0.2",
     "awesome-typescript-loader": "5.2.1",
     "budo": "11.6.4",
     "chai": "4.2.0",
@@ -23,6 +25,7 @@
     "mocha": "8.1.0",
     "source-map-loader": "1.0.1",
     "ts-loader": "8.0.2",
+    "ts-node": "8.10.2",
     "typescript": "3.7.5",
     "webpack": "4.44.1",
     "webpack-cli": "3.3.12",

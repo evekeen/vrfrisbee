@@ -1,4 +1,4 @@
-import {rotateZTrajectory} from '../src/js/matrix';
+import {rotateZTrajectory} from '../src/ts/matrix';
 import {expect} from 'chai';
 
 describe('Rotate', function () {

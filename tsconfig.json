@@ -12,6 +12,7 @@
     "strictNullChecks": true,
     "jsx": "react",
     "types": [
+      "mocha"
     ]
   },
   "include": [

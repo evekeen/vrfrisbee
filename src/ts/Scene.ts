@@ -14,9 +14,9 @@ import {
   FreeCamera,
   Vector3,
   HemisphericLight, StandardMaterial, PhysicsImpostor, AbstractMesh
-} from "@babylonjs/core";
+} from "babylonjs";
 
-import '@babylonjs/loaders';
+import 'babylonjs-loaders';
 
 const collisionFrames = 150;
 
@@ -98,7 +98,7 @@ export const createScene = async function (engine, canvas) {
   const landscapeTask = assetsManager.addMeshTask("milkyway", "", "milkyway/", "scene.gltf");
   landscapeTask.onSuccess = task => task.loadedMeshes[0];
 
-  const forest = Forest.init(30, assetsManager, {
+  const forest = Forest.init(60, assetsManager, {
     normal: pMaterial,
     collided: fMaterial
   });
@@ -140,35 +140,35 @@ export const createScene = async function (engine, canvas) {
   let collision = false;
   let collisionFrame = 0;
 
-  // scene.registerBeforeRender(() => {
-  //   frisbees.forEach(frisbee => {
-  //     if (frisbee.intersectsMesh(pineapple, false)) {
-  //       if (!collision) {
-  //         collision = true;
-  //         collisionFrame = 0;
-  //         pineapple.material = pMaterialExplosion;
-  //         const scaling = 1.5;
-  //         pineapple.scaling = new Vector3(scaling, scaling, scaling);
-  //         pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
-  //           mass: 10,
-  //           restitution: 0.5
-  //         }, scene);
-  //         pineapple.physicsImpostor.applyImpulse(new Vector3(100, 10, 400), pineapple.getAbsolutePosition());
-  //       }
-  //     }
-  //     if (collision && collisionFrame++ > collisionFrames) {
-  //       collision = false;
-  //       pineapple.material = pMaterial;
-  //       pineapple.scaling = new Vector3(1, 1, 1);
-  //       pineapple.position = TARGET_POSITION;
-  //       pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
-  //         mass: 0,
-  //         restitution: 0.5
-  //       }, scene);
-  //     }
-  //     // forest.then(f => f.checkCollisions(frisbee));
-  //   });
-  // });
+  scene.registerBeforeRender(() => {
+    frisbees.forEach(frisbee => {
+      if (frisbee.intersectsMesh(pineapple, false)) {
+        if (!collision) {
+          collision = true;
+          collisionFrame = 0;
+          pineapple.material = pMaterialExplosion;
+          const scaling = 1.5;
+          pineapple.scaling = new Vector3(scaling, scaling, scaling);
+          pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
+            mass: 10,
+            restitution: 0.5
+          }, scene);
+          pineapple.physicsImpostor.applyImpulse(new Vector3(100, 10, 400), pineapple.getAbsolutePosition());
+        }
+      }
+      if (collision && collisionFrame++ > collisionFrames) {
+        collision = false;
+        pineapple.material = pMaterial;
+        pineapple.scaling = new Vector3(1, 1, 1);
+        pineapple.position = TARGET_POSITION;
+        pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
+          mass: 0,
+          restitution: 0.5
+        }, scene);
+      }
+      forest.then(f => f.checkCollisions(frisbee));
+    });
+  });
 
   function listenToComponent(component, controller) {
     component && component.onButtonStateChangedObservable.add(() => {

@@ -1,4 +1,4 @@
-import {AbstractMesh, Color4, ParticleSystem, Scene, Texture, Vector3} from "@babylonjs/core";
+import {AbstractMesh, Color4, ParticleSystem, Scene, Texture, Vector3} from "babylonjs";
 
 export function createParticles(scene: Scene, emitter: AbstractMesh) {
   const particleSystem = new ParticleSystem("particles", 2000, scene);

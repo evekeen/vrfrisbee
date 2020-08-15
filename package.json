@@ -33,9 +33,8 @@
     "vr"
   ],
   "dependencies": {
-    "@babylonjs/core": "4.2.0-alpha.26",
-    "@babylonjs/materials": "4.2.0-alpha.26",
-    "@babylonjs/loaders": "4.2.0-alpha.26",
+    "babylonjs": "4.2.0-alpha.26",
+    "babylonjs-loaders": "4.2.0-alpha.26",
     "cannon": "0.6.2",
     "mathjs": "7.1.0"
   }

@@ -65,9 +65,6 @@ module.exports = (env, argv) => {
       port: 3000,
       publicPath: "/"
     },
-    externals: {
-      oimo: true
-    },
     plugins: [new CleanWebpackPlugin()]
   };
 };

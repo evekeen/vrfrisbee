@@ -1,4 +1,4 @@
-import {AbstractMesh, AssetsManager, Material, Mesh, Vector3} from "@babylonjs/core";
+import {AbstractMesh, AssetsManager, Material, Vector3} from "babylonjs";
 
 export class Forest {
   private readonly collisions = new Map<number, Collision>();
@@ -82,7 +82,7 @@ export interface TreeMaterials {
 const TREE_ANIMATION_LENGTH = 10;
 const TREE_SCALE_BASE = 0.3;
 const TREE_POSITION_RANGE = 30;
-const MIN_TREE_DISTANCE = 10;
+const MIN_TREE_DISTANCE = 2;
 
 function nextTreeCoordinates(): number[] {
   const distance = Math.random() * TREE_POSITION_RANGE + MIN_TREE_DISTANCE;

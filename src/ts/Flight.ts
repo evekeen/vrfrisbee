@@ -1,4 +1,4 @@
-import {AbstractMesh, Animation, Scene} from "@babylonjs/core";
+import {AbstractMesh, Animation, Scene} from "babylonjs";
 import {Trajectory} from "./trajectories";
 
 export function animateFlight(scene: Scene, frisbee: AbstractMesh, trajectory: Trajectory) {

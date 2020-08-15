@@ -17,6 +17,12 @@ Copy `src/static/*` to `dist/`
 
 Open `dist/index.html` in browser
 
+## Run dev-server
+Instead of building manually and reloading everything, it's convenient to use a dev-server
+```
+npm start
+```
+
 ## Model
 
 [FrisPy](https://github.com/tmcclintock/FrisPy) library has been used in order to calculate a frisbee flight trajectory

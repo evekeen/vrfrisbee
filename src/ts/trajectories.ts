@@ -1,5 +1,5 @@
 import {arrayLength, normalize, rotateZTrajectory, scaleAndTranslate} from "./matrix";
-import {distanceConversion, velocityFactor} from "./flight";
+import {distanceConversion, velocityFactor} from "./Flight";
 
 const WEAK_THRESHOLD = 0.1;
 

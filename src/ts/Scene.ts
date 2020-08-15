@@ -140,35 +140,35 @@ export const createScene = async function (engine, canvas) {
   let collision = false;
   let collisionFrame = 0;
 
-  scene.registerBeforeRender(() => {
-    frisbees.forEach(frisbee => {
-      if (frisbee.intersectsMesh(pineapple, false)) {
-        if (!collision) {
-          collision = true;
-          collisionFrame = 0;
-          pineapple.material = pMaterialExplosion;
-          const scaling = 1.5;
-          pineapple.scaling = new Vector3(scaling, scaling, scaling);
-          pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
-            mass: 10,
-            restitution: 0.5
-          }, scene);
-          pineapple.physicsImpostor.applyImpulse(new Vector3(100, 10, 400), pineapple.getAbsolutePosition());
-        }
-      }
-      if (collision && collisionFrame++ > collisionFrames) {
-        collision = false;
-        pineapple.material = pMaterial;
-        pineapple.scaling = new Vector3(1, 1, 1);
-        pineapple.position = TARGET_POSITION;
-        pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
-          mass: 0,
-          restitution: 0.5
-        }, scene);
-      }
-      forest.then(f => f.checkCollisions(frisbee));
-    });
-  });
+  // scene.registerBeforeRender(() => {
+  //   frisbees.forEach(frisbee => {
+  //     if (frisbee.intersectsMesh(pineapple, false)) {
+  //       if (!collision) {
+  //         collision = true;
+  //         collisionFrame = 0;
+  //         pineapple.material = pMaterialExplosion;
+  //         const scaling = 1.5;
+  //         pineapple.scaling = new Vector3(scaling, scaling, scaling);
+  //         pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
+  //           mass: 10,
+  //           restitution: 0.5
+  //         }, scene);
+  //         pineapple.physicsImpostor.applyImpulse(new Vector3(100, 10, 400), pineapple.getAbsolutePosition());
+  //       }
+  //     }
+  //     if (collision && collisionFrame++ > collisionFrames) {
+  //       collision = false;
+  //       pineapple.material = pMaterial;
+  //       pineapple.scaling = new Vector3(1, 1, 1);
+  //       pineapple.position = TARGET_POSITION;
+  //       pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
+  //         mass: 0,
+  //         restitution: 0.5
+  //       }, scene);
+  //     }
+  //     // forest.then(f => f.checkCollisions(frisbee));
+  //   });
+  // });
 
   function listenToComponent(component, controller) {
     component && component.onButtonStateChangedObservable.add(() => {
@@ -221,11 +221,8 @@ export const createScene = async function (engine, canvas) {
   }
 
   function throwFrisbee() {
-    frisbee.setEnabled(false);
-    // const f1 = cloneFrisbee(frisbee);
     const f2 = cloneFrisbee(frisbee);
-    // setFrisbeeMaterial(f2, pMaterial);
-    // animateFlight(scene, f1, getTrajectory(positions, orientations, findLastVelocity));
+    frisbee.setEnabled(false);
     const trajectory = getTrajectory(traceP, frisbeeOrientation, (points) => findAverageVelocity(points, 3));
     animateFlight(scene, f2, trajectory).onAnimationEnd = () => {
       f2.isVisible = false;

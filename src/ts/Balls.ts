@@ -31,7 +31,7 @@ function setupBall(original: AbstractMesh, i: number): AbstractMesh {
   return ball;
 }
 
-const SCALE_RANGE = 2;
+const SCALE_RANGE = 3;
 const RANGE_DISTANCE = 20;
 const MIN_DISTANCE = 15;
 const RANGE_Y = 10;

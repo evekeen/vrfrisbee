@@ -98,10 +98,7 @@ export const createScene = async function (engine, canvas) {
   const landscapeTask = assetsManager.addMeshTask("milkyway", "", "milkyway/", "scene.gltf");
   landscapeTask.onSuccess = task => task.loadedMeshes[0];
 
-  const forest = Forest.init(60, assetsManager, {
-    normal: pMaterial,
-    collided: fMaterial
-  });
+  const forest = Forest.init(60, assetsManager);
 
   // const pTask = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
   // pTask.onError = err => console.log("Cannot load scene", err);
@@ -142,6 +139,7 @@ export const createScene = async function (engine, canvas) {
 
   scene.registerBeforeRender(() => {
     frisbees.forEach(frisbee => {
+      frisbee.computeWorldMatrix();
       if (frisbee.intersectsMesh(pineapple, false)) {
         if (!collision) {
           collision = true;

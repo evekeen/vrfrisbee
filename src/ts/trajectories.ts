@@ -88,7 +88,7 @@ export function getTrajectory(positions, frisbeeOrientation, velocityProvider): 
   const lastPosition = positions[positions.length - 1];
   let velocityArray = velocityProvider(positions);
   if (arrayLength(velocityArray) < 0.1) {
-    const randomFactor = 0.1
+    const randomFactor = 0.03
     velocityArray = [
       Math.random() * randomFactor - randomFactor / 2,
       Math.random() * randomFactor - randomFactor / 2,

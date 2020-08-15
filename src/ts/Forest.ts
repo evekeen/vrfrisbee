@@ -12,14 +12,17 @@ export class Forest {
         if (c.nextFrame()) this.collisions.delete(i);
       });
       if (frisbee.intersectsMesh(tree)) {
-        if (!this.collisions.has(i)) {
-          this.collisions.set(i, new Collision(tree, this.materials.collided, 0));
+        const collision = this.collisions.get(i);
+        if (collision) {
+          collision.restart();
+        } else {
+          this.collisions.set(i, new Collision(tree, this.materials));
         }
       }
     });
   }
 
-  static init(numberOfTrees: number, assetsManager: AssetsManager, materials: TreeMaterials): Promise<Forest> {
+  static init(numberOfTrees: number, assetsManager: AssetsManager): Promise<Forest> {
     const treeTask = assetsManager.addMeshTask('tree', '', 'pinetree/', 'tree.gltf');
     return new Promise<Forest>((resolve, reject) => {
       treeTask.onSuccess = task => {
@@ -30,11 +33,11 @@ export class Forest {
           trees.push(tree);
         }
 
-        // const normal = original.material!!.clone('tree-normal')!!;
-        // const collided = normal.clone('tree-collided')!!;
-        // collided.alpha = 0.5;
+        const normal = original.getChildMeshes()[0].material!!;
+        const collided = normal.clone('tree-collided')!!;
+        collided.alpha = 0.5;
         original.dispose();
-        resolve(new Forest(trees, materials));
+        resolve(new Forest(trees, {normal, collided}));
       };
       treeTask.onError = err => {
         console.log("Cannot load scene", err);
@@ -44,17 +47,23 @@ export class Forest {
   }
 
   private static setupTree(original: AbstractMesh, i: number): AbstractMesh {
-    const tree = original.clone('tree' + i, null)!!;
-    tree.position = Vector3.FromArray(nextTreeCoordinates());
+    const root = original.clone('tree' + i, null)!!;
+    root.position = Vector3.FromArray(nextTreeCoordinates());
     const scale = TREE_SCALE_BASE * (Math.random() + 1);
-    tree.scaling = new Vector3(scale, scale, scale);
+    root.scaling = new Vector3(scale, scale, scale);
+    root.computeWorldMatrix();
+
+    const tree = root.getChildMeshes()[0];
+    tree.checkCollisions = true;
     return tree;
   }
 }
 
 class Collision {
-  constructor(private readonly mesh: AbstractMesh, private readonly collidedMaterial: Material, private elapsed: number) {
-    this.start();
+  private elapsed: number = 0;
+
+  constructor(private readonly mesh: AbstractMesh, private readonly materials: TreeMaterials) {
+    this.restart();
   }
 
   nextFrame(): boolean {
@@ -65,12 +74,13 @@ class Collision {
     return false;
   }
 
-  private start(): void {
-    this.mesh.material = this.collidedMaterial;
+  restart(): void {
+    this.elapsed = 0;
+    this.mesh.material = this.materials.collided;
   }
 
   private end(): void {
-    // this.mesh.material = this.materials.normal;
+    this.mesh.material = this.materials.normal;
   }
 }
 
@@ -82,7 +92,7 @@ export interface TreeMaterials {
 const TREE_ANIMATION_LENGTH = 10;
 const TREE_SCALE_BASE = 0.3;
 const TREE_POSITION_RANGE = 30;
-const MIN_TREE_DISTANCE = 2;
+const MIN_TREE_DISTANCE = 10;
 
 function nextTreeCoordinates(): number[] {
   const distance = Math.random() * TREE_POSITION_RANGE + MIN_TREE_DISTANCE;

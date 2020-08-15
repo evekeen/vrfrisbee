@@ -19,19 +19,17 @@ import 'babylonjs-loaders';
 import { initForest } from './Forest';
 import {initBalls} from "./Balls";
 
-
-const frisbeeScale = 0.00002;
-const frisbees: AbstractMesh[] = [];
-let frisbeeCounter = 0;
-
-let frisbee;
-
-const ray = Ray.Zero();
-let pressed = false;
-let traceP: Vector3[] = [];
-let frisbeeOrientation : Vector3 | undefined = undefined;
-
 export const createScene = async function (engine, canvas) {
+  const frisbees: AbstractMesh[] = [];
+  let frisbeeCounter = 0;
+  let frisbee : AbstractMesh | undefined;
+
+  const ray = Ray.Zero();
+  let pressed = false;
+  let traceP: Vector3[] = [];
+  let frisbeeOrientation : Vector3 | undefined = undefined;
+
+
   const scene = new Scene(engine);
   scene.collisionsEnabled = true;
   const cannonPlugin = new CannonJSPlugin(true, 10, cannon);
@@ -94,7 +92,7 @@ export const createScene = async function (engine, canvas) {
     frisbee = task.loadedMeshes[0];
     frisbee.position = new Vector3(0, 1, 0);
     frisbee.rotation = new Vector3(0, 0, 0);
-    frisbee.scaling = new Vector3(frisbeeScale, frisbeeScale, frisbeeScale);
+    frisbee.scaling = new Vector3(FRISBEE_SCALE, FRISBEE_SCALE, FRISBEE_SCALE);
     frisbee.checkCollisions = true;
     setFrisbeeMaterial(frisbee, fMaterial);
     frisbee.setEnabled(false);
@@ -160,17 +158,26 @@ export const createScene = async function (engine, canvas) {
   function setRotationFrom(controller) {
     const rotationQuaternion = controller.pointer.rotationQuaternion;
     const frisbeeRotation = rotationQuaternion.toEulerAngles();
-    frisbee.rotation = new Vector3(frisbeeRotation.x, frisbeeRotation.y, frisbeeRotation.z);
+    frisbee!!.rotation = new Vector3(frisbeeRotation.x, frisbeeRotation.y, frisbeeRotation.z);
   }
 
   function throwFrisbee() {
     const clone = cloneFrisbee(frisbee);
-    frisbee.setEnabled(false);
+    frisbee!!.setEnabled(false);
     const trajectory = getTrajectory(traceP, frisbeeOrientation, (points) => findAverageVelocity(points, 3));
     animateFlight(scene, clone, trajectory).onAnimationEnd = () => {
       clone.isVisible = false;
       setTimeout(() => clone.dispose(), 1000);
     };
+  }
+
+  function cloneFrisbee(frisbee) {
+    const clone = frisbee.clone();
+    getFrisbeeMesh(clone).checkCollisions = true;
+    const id = frisbeeCounter++;
+    frisbees[id] = clone;
+    clone.onDispose = () => delete frisbees[id];
+    return clone;
   }
 
   return scene;
@@ -184,11 +191,4 @@ function setFrisbeeMaterial(frisbee, material) {
   getFrisbeeMesh(frisbee).material = material;
 }
 
-function cloneFrisbee(frisbee) {
-  const clone = frisbee.clone();
-  getFrisbeeMesh(clone).checkCollisions = true;
-  const id = frisbeeCounter++;
-  frisbees[id] = clone;
-  clone.onDispose = () => delete frisbees[id];
-  return clone;
-}
+const FRISBEE_SCALE = 0.00002;

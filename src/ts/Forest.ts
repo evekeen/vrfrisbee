@@ -31,7 +31,7 @@ function setupTree(original: AbstractMesh, i: number): AbstractMesh {
   const scaleIncrease = Math.random();
   const scale = TREE_SCALE_BASE * (scaleIncrease + 1);
   const coordinates = nextTreeCoordinates();
-  coordinates[1] -= scaleIncrease * 3;
+  coordinates[1] -= scaleIncrease;
   root.position = Vector3.FromArray(coordinates);
   root.scaling = new Vector3(scale, scale, scale);
   root.computeWorldMatrix();

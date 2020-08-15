@@ -22,7 +22,7 @@ export class Forest {
     });
   }
 
-  static init(numberOfTrees: number, assetsManager: AssetsManager): Promise<Forest> {
+  static init(assetsManager: AssetsManager, numberOfTrees: number = 40): Promise<Forest> {
     const treeTask = assetsManager.addMeshTask('tree', '', 'pinetree/', 'tree.gltf');
     return new Promise<Forest>((resolve, reject) => {
       treeTask.onSuccess = task => {
@@ -92,7 +92,7 @@ export interface TreeMaterials {
 const TREE_ANIMATION_LENGTH = 10;
 const TREE_SCALE_BASE = 0.3;
 const TREE_POSITION_RANGE = 30;
-const MIN_TREE_DISTANCE = 10;
+const MIN_TREE_DISTANCE = 2;
 
 function nextTreeCoordinates(): number[] {
   const distance = Math.random() * TREE_POSITION_RANGE + MIN_TREE_DISTANCE;

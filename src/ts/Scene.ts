@@ -98,7 +98,7 @@ export const createScene = async function (engine, canvas) {
   const landscapeTask = assetsManager.addMeshTask("milkyway", "", "milkyway/", "scene.gltf");
   landscapeTask.onSuccess = task => task.loadedMeshes[0];
 
-  const forest = Forest.init(60, assetsManager);
+  const forest = Forest.init(assetsManager);
 
   // const pTask = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
   // pTask.onError = err => console.log("Cannot load scene", err);
@@ -120,7 +120,6 @@ export const createScene = async function (engine, canvas) {
   const task = assetsManager.addMeshTask("task2", "", "disc/", "scene.gltf");
   task.onError = err => console.log("Cannot load scene", err);
   task.onSuccess = task => {
-    task.loadedMeshes.forEach(e => e.checkCollisions = true);
     frisbee = task.loadedMeshes[0];
     frisbee.position = new Vector3(0, 1, 0);
     frisbee.rotation = new Vector3(0, 0, 0);
@@ -219,24 +218,29 @@ export const createScene = async function (engine, canvas) {
   }
 
   function throwFrisbee() {
-    const f2 = cloneFrisbee(frisbee);
+    const clone = cloneFrisbee(frisbee);
     frisbee.setEnabled(false);
     const trajectory = getTrajectory(traceP, frisbeeOrientation, (points) => findAverageVelocity(points, 3));
-    animateFlight(scene, f2, trajectory).onAnimationEnd = () => {
-      f2.isVisible = false;
-      setTimeout(() => f2.dispose(), 1000);
+    animateFlight(scene, clone, trajectory).onAnimationEnd = () => {
+      clone.isVisible = false;
+      setTimeout(() => clone.dispose(), 1000);
     };
   }
 
   return scene;
 };
 
+function getFrisbeeMesh(frisbee) {
+  return frisbee.getChildMeshes(false, c => c.id.indexOf('TARELKA_Mat.1_0') !== -1)[0];
+}
+
 function setFrisbeeMaterial(frisbee, material) {
-  frisbee.getChildMeshes(false, c => c.id.indexOf('TARELKA_Mat.1_0') !== -1)[0].material = material;
+  getFrisbeeMesh(frisbee).material = material;
 }
 
 function cloneFrisbee(frisbee) {
   const clone = frisbee.clone();
+  getFrisbeeMesh(clone).checkCollisions = true;
   const id = frisbeeCounter++;
   frisbees[id] = clone;
   clone.onDispose = () => delete frisbees[id];

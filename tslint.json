@@ -1,0 +1,40 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "object-literal-shorthand": false,
+        "comment-format": false,
+        "quotemark": [true, "single", "avoid-template"],
+        "max-line-length": [false],
+        "curly": [true, "ignore-same-line"],
+        "object-literal-sort-keys": false,
+        "trailing-comma": false,
+        "member-access": false,
+        "member-ordering": false,
+        "semicolon": [true, "always", "ignore-bound-class-methods"],
+        "typedef": [true, "call-signature"],
+        "arrow-parens": [true, "ban-single-arg-parens"],
+        "interface-name": false,
+        "variable-name": [true, "check-format", "allow-leading-underscore", "allow-pascal-case"],
+        "ordered-imports": false,
+        "no-reference": false,
+        "max-classes-per-file": [false],
+        "no-shadowed-variable": true,
+        "no-unused-expression": [true, "allow-fast-null-checks", "allow-new"],
+        "align": false,
+        "eofline": false,
+        "no-trailing-whitespace": false,
+        "whitespace": [true, "check-branch", "check-operator", "check-typecast"],
+        "array-type": [true, "array"],
+        "one-line": [true, "check-catch", "check-finally", "check-else"],
+        "jsdoc-format": false,
+        "space-before-function-paren": [true, {"anonymous": "always",  "constructor": "never", "method": "never", "asyncArrow": "always", "named": "never"}],
+        "no-empty": false,
+        "no-empty-interface": false,
+        "object-literal-key-quotes": [true, "consistent"]
+    },
+    "rulesDirectory": []
+}

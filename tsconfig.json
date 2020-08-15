@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "outDir": "generated-js",
+    "allowJs": true,
+    "sourceMap": true,
+    "module": "ES6",
+    "moduleResolution": "node",
+    "target": "es6",
+    "importHelpers": true,
+    "inlineSources": true,
+    "noEmitHelpers": true,
+    "strictNullChecks": true,
+    "jsx": "react",
+    "types": [
+    ]
+  },
+  "include": [
+    "src/js/**/*"
+  ]
+}

@@ -1,10 +1,12 @@
-import * as BABYLON from '@babylonjs/core/Legacy/legacy';
-import {createScene} from './scene.js';
+import {createScene} from './scene';
+import {Engine} from '@babylonjs/core/Engines/engine'
 
 const canvas = document.getElementById("renderCanvas"); // Get the canvas element
-const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+// @ts-ignore
+const engine = new Engine(canvas, true); // Generate the BABYLON 3D engine
 
 // let polyfill = new WebXRPolyfill();
+// @ts-ignore
 if (!navigator.xr) {
   alert('no xr');
   throw Error('not supported');

@@ -1,38 +1,47 @@
-import * as BABYLON from 'babylonjs';
-import {CannonJSPlugin} from 'babylonjs';
-import 'babylonjs-loaders';
 import {findAverageVelocity} from "./matrix";
 import * as cannon from 'cannon';
-import {createParticles} from "./particles";
-import {animateFlight} from "./flight";
+import {createParticles} from "./Particles";
+import {animateFlight} from "./Flight";
 import {getTrajectory} from "./trajectories";
+import {Forest} from "./Forest";
+import {
+  AssetsManager,
+  Ray,
+  Scene,
+  CannonJSPlugin,
+  Color3,
+  MeshBuilder,
+  FreeCamera,
+  Vector3,
+  HemisphericLight, StandardMaterial, PhysicsImpostor, AbstractMesh
+} from "@babylonjs/core";
 
 const collisionFrames = 150;
 
-const treeScale = 0.3;
-const TREE_NUMBER = 30;
-
 const frisbeeScale = 0.00002;
-const frisbees = [];
+const frisbees: AbstractMesh[] = [];
 let frisbeeCounter = 0;
 
-const ray = BABYLON.Ray.Zero();
+let pineapple;
+let frisbee;
+
+const ray = Ray.Zero();
 let pressed = false;
-let traceP = [];
-let frisbeeOrientation = undefined;
-let frisbeeRotation = undefined;
+let traceP: Vector3[] = [];
+let frisbeeOrientation : Vector3 | undefined = undefined;
 
 export const createScene = async function (engine, canvas) {
-  const scene = new BABYLON.Scene(engine);
+  const scene = new Scene(engine);
   scene.collisionsEnabled = true;
   const cannonPlugin = new CannonJSPlugin(true, 10, cannon);
   scene.enablePhysics(null, cannonPlugin);
   const env = scene.createDefaultEnvironment({
     enableGroundShadow: false,
     createSkybox: false
-  });
-  env.setMainColor(BABYLON.Color3.FromHexString("#010002"));
-  const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 50, height: 50}, scene);
+  })!!;
+  env.setMainColor(Color3.FromHexString("#010002"));
+
+  const ground = MeshBuilder.CreateGround("ground", {width: 50, height: 50}, scene);
 
   const xr = await scene.createDefaultXRExperienceAsync({
     floorMeshes: [ground],
@@ -46,75 +55,63 @@ export const createScene = async function (engine, canvas) {
     console.log("XR supported");
   }
 
-  const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 0, -100), scene);
-  camera.setTarget(new BABYLON.Vector3(0, 0, -1000));
+  const camera = new FreeCamera("camera1", new Vector3(0, 0, -100), scene);
+  camera.setTarget(new Vector3(0, 0, -1000));
   camera.attachControl(canvas, true);
 
-  const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+  const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
   light.intensity = 0.3;
 
-  const fMaterial = new BABYLON.StandardMaterial("frisbee", scene);
-  fMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-  fMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-  fMaterial.emissiveColor = new BABYLON.Color3(0.5, 0, 0.5);
-  fMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+  const fMaterial = new StandardMaterial("frisbee", scene);
+  fMaterial.diffuseColor = new Color3(0, 0, 0);
+  fMaterial.specularColor = new Color3(0.5, 0.6, 0.87);
+  fMaterial.emissiveColor = new Color3(0.5, 0, 0.5);
+  fMaterial.ambientColor = new Color3(0.23, 0.98, 0.53);
   fMaterial.alpha = 0.8;
 
-  const groundMat = new BABYLON.StandardMaterial("ground", scene);
-  groundMat.diffuseColor = new BABYLON.Color3.FromHexString('#010002');
-  groundMat.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-  groundMat.emissiveColor = new BABYLON.Color3(0.1, 0, 0.1);
-  groundMat.ambientColor = new BABYLON.Color3(0.1, 0, 0.1);
+  const groundMat = new StandardMaterial("ground", scene);
+  groundMat.diffuseColor = Color3.FromHexString('#010002');
+  groundMat.specularColor = new Color3(0.5, 0.6, 0.87);
+  groundMat.emissiveColor = new Color3(0.1, 0, 0.1);
+  groundMat.ambientColor = new Color3(0.1, 0, 0.1);
   groundMat.alpha = 1;
 
-  const pMaterial = new BABYLON.StandardMaterial("pineapple", scene);
-  pMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1);
-  pMaterial.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-  pMaterial.emissiveColor = new BABYLON.Color3(0, 0, 0);
-  pMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+  const pMaterial = new StandardMaterial("pineapple", scene);
+  pMaterial.diffuseColor = new Color3(0, 0, 1);
+  pMaterial.specularColor = new Color3(0.5, 0.6, 0.87);
+  pMaterial.emissiveColor = new Color3(0, 0, 0);
+  pMaterial.ambientColor = new Color3(0.23, 0.98, 0.53);
   pMaterial.alpha = 0.9;
 
-  const pMaterialExplosion = new BABYLON.StandardMaterial("pineapple-explosion", scene);
-  pMaterialExplosion.diffuseColor = new BABYLON.Color3(1, 0, 0);
-  pMaterialExplosion.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
-  pMaterialExplosion.emissiveColor = new BABYLON.Color3(0, 0, 0);
-  pMaterialExplosion.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
+  const pMaterialExplosion = new StandardMaterial("pineapple-explosion", scene);
+  pMaterialExplosion.diffuseColor = new Color3(1, 0, 0);
+  pMaterialExplosion.specularColor = new Color3(0.5, 0.6, 0.87);
+  pMaterialExplosion.emissiveColor = new Color3(0, 0, 0);
+  pMaterialExplosion.ambientColor = new Color3(0.23, 0.98, 0.53);
   pMaterialExplosion.alpha = 1;
 
   ground.material = groundMat;
 
-  const assetsManager = new BABYLON.AssetsManager(scene);
+  const assetsManager = new AssetsManager(scene);
   const landscapeTask = assetsManager.addMeshTask("milkyway", "", "milkyway/", "scene.gltf");
   landscapeTask.onSuccess = task => task.loadedMeshes[0];
 
-  const treeTask = assetsManager.addMeshTask("tree", "", "pinetree/", "tree.gltf");
-  treeTask.onSuccess = task => {
-    const tree = task.loadedMeshes[0];
-    setupTree(tree);
-    for (let i = 0; i < TREE_NUMBER - 1; i++) {
-      const newTree = tree.clone();
-      setupTree(newTree);
-    }
-  };
-  treeTask.onError = err => console.log("Cannot load scene", err);
-
-  let pineapple;
-  let frisbee;
+  const forest = Forest.init(30, assetsManager);
 
   // const pTask = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
   // pTask.onError = err => console.log("Cannot load scene", err);
   // pTask.onSuccess = task => {
   //   task.loadedMeshes.forEach(e => e.checkCollisions = true);
   //   pineapple = task.loadedMeshes[0];
-  //   pineapple.position = new BABYLON.Vector3(0, 0, 25);
-  //   pineapple.scaling = new BABYLON.Vector3(3, 3, 3);
+  //   pineapple.position = new Vector3(0, 0, 25);
+  //   pineapple.scaling = new Vector3(3, 3, 3);
   //   pineapple.checkCollisions = true;
   //   pineapple.showBoundingBox = true;
   // };
 
-  const TARGET_POSITION = new BABYLON.Vector3(0, 2, 25);
+  const TARGET_POSITION = new Vector3(0, 2, 25);
 
-  pineapple = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2}, scene);
+  pineapple = MeshBuilder.CreateSphere("sphere", {diameter: 2}, scene);
   pineapple.position = TARGET_POSITION;
   pineapple.material = pMaterial;
 
@@ -123,9 +120,9 @@ export const createScene = async function (engine, canvas) {
   task.onSuccess = task => {
     task.loadedMeshes.forEach(e => e.checkCollisions = true);
     frisbee = task.loadedMeshes[0];
-    frisbee.position = new BABYLON.Vector3(0, 1, 0);
-    frisbee.rotation = new BABYLON.Vector3(0, 0, 0);
-    frisbee.scaling = new BABYLON.Vector3(frisbeeScale, frisbeeScale, frisbeeScale);
+    frisbee.position = new Vector3(0, 1, 0);
+    frisbee.rotation = new Vector3(0, 0, 0);
+    frisbee.scaling = new Vector3(frisbeeScale, frisbeeScale, frisbeeScale);
     frisbee.checkCollisions = true;
     setFrisbeeMaterial(frisbee, fMaterial);
     frisbee.setEnabled(false);
@@ -139,31 +136,32 @@ export const createScene = async function (engine, canvas) {
   let collisionFrame = 0;
 
   scene.registerBeforeRender(() => {
-    Object.values(frisbees).forEach(frisbee => {
+    frisbees.forEach(frisbee => {
       if (frisbee.intersectsMesh(pineapple, false)) {
         if (!collision) {
           collision = true;
           collisionFrame = 0;
           pineapple.material = pMaterialExplosion;
           const scaling = 1.5;
-          pineapple.scaling = new BABYLON.Vector3(scaling, scaling, scaling);
-          pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
+          pineapple.scaling = new Vector3(scaling, scaling, scaling);
+          pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
             mass: 10,
             restitution: 0.5
           }, scene);
-          pineapple.physicsImpostor.applyImpulse(new BABYLON.Vector3(100, 10, 400), pineapple.getAbsolutePosition());
+          pineapple.physicsImpostor.applyImpulse(new Vector3(100, 10, 400), pineapple.getAbsolutePosition());
         }
       }
       if (collision && collisionFrame++ > collisionFrames) {
         collision = false;
         pineapple.material = pMaterial;
-        pineapple.scaling = new BABYLON.Vector3(1, 1, 1);
+        pineapple.scaling = new Vector3(1, 1, 1);
         pineapple.position = TARGET_POSITION;
-        pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
+        pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
           mass: 0,
           restitution: 0.5
         }, scene);
       }
+      forest.then(f => f.checkCollisions(frisbee));
     });
   });
 
@@ -190,14 +188,14 @@ export const createScene = async function (engine, canvas) {
   xr.input.onControllerAddedObservable.add(controller => {
     if (controller.inputSource.handedness === 'right') {
       controller.onMotionControllerInitObservable.add(() => {
-        listenToComponent(controller.motionController.getComponent('xr-standard-squeeze'), controller);
-        listenToComponent(controller.motionController.getMainComponent(), controller);
+        listenToComponent(controller.motionController!!.getComponent('xr-standard-squeeze'), controller);
+        listenToComponent(controller.motionController!!.getMainComponent(), controller);
       });
 
       const frameObserver = xr.baseExperience.sessionManager.onXRFrameObservable.add(() => {
         controller.getWorldPointerRayToRef(ray, true);
         if (frisbee && pressed) {
-          const position = ray.origin.clone();
+          const position = ray.origin.clone()!!;
           frisbeeOrientation = ray.direction.clone();
           traceP.push(position);
           frisbee.position = position.clone();
@@ -213,8 +211,8 @@ export const createScene = async function (engine, canvas) {
 
   function setRotationFrom(controller) {
     const rotationQuaternion = controller.pointer.rotationQuaternion;
-    frisbeeRotation = rotationQuaternion.toEulerAngles();
-    frisbee.rotation = new BABYLON.Vector3(frisbeeRotation.x, frisbeeRotation.y, frisbeeRotation.z);
+    const frisbeeRotation = rotationQuaternion.toEulerAngles();
+    frisbee.rotation = new Vector3(frisbeeRotation.x, frisbeeRotation.y, frisbeeRotation.z);
   }
 
   function throwFrisbee() {
@@ -230,11 +228,6 @@ export const createScene = async function (engine, canvas) {
     };
   }
 
-  // await scene.debugLayer.show({
-  //   overlay: false,
-  //   globalRoot: document.getElementById('frisbee')
-  // });
-
   return scene;
 };
 
@@ -248,21 +241,4 @@ function cloneFrisbee(frisbee) {
   frisbees[id] = clone;
   clone.onDispose = () => delete frisbees[id];
   return clone;
-}
-
-const TREE_POSITION_RANGE = 30;
-const MIN_TREE_DISTANCE = 10;
-
-function nextTreeCoordinates() {
-  const distance = Math.random() * TREE_POSITION_RANGE + MIN_TREE_DISTANCE;
-  const angle = Math.random() * Math.PI * 2;
-  const x = Math.cos(angle) * distance;
-  const z = Math.sin(angle) * distance;
-  return [x, 0, z];
-}
-
-function setupTree(tree) {
-  tree.position = BABYLON.Vector3.FromArray(nextTreeCoordinates());
-  const scale = treeScale * (Math.random() + 1);
-  tree.scaling = new BABYLON.Vector3(scale, scale, scale);
 }

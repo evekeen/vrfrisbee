@@ -1,4 +1,4 @@
-import {AbstractMesh, AssetsManager, Material, Vector3} from "babylonjs";
+import {AbstractMesh, AssetsManager, Material, Vector3, Color3} from "babylonjs";
 
 export class Forest {
   private readonly collisions = new Map<number, Collision>();
@@ -36,7 +36,8 @@ export class Forest {
 
         const normal = original.getChildMeshes()[0].material!!;
         const collided = normal.clone('tree-collided')!!;
-        collided.alpha = 0.5;
+        // @ts-ignore
+        collided.emissiveColor = new Color3(0.8, 0, 0.5);
         original.dispose();
         resolve(new Forest(trees, {normal, collided}));
       };
@@ -49,8 +50,11 @@ export class Forest {
 
   private static setupTree(original: AbstractMesh, i: number): AbstractMesh {
     const root = original.clone('tree' + i, null)!!;
-    root.position = Vector3.FromArray(nextTreeCoordinates());
-    const scale = TREE_SCALE_BASE * (Math.random() + 1);
+    const scaleIncrease = Math.random();
+    const scale = TREE_SCALE_BASE * (scaleIncrease + 1);
+    const coordinates = nextTreeCoordinates();
+    coordinates[1] -= scaleIncrease * 3;
+    root.position = Vector3.FromArray(coordinates);
     root.scaling = new Vector3(scale, scale, scale);
     root.computeWorldMatrix();
 

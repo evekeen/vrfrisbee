@@ -58,7 +58,7 @@ module.exports = (env, argv) => {
       filename: '[name].bundle.js'
     },
     mode: 'development',
-    devtool: 'source-map',
+    // devtool: 'source-map',
     devServer: {
       contentBase: path.join(__dirname, 'src/static'),
       compress: true,

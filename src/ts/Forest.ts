@@ -7,10 +7,11 @@ export class Forest {
   }
 
   checkCollisions(frisbee: AbstractMesh) {
+    this.collisions.forEach((c, i) => {
+      if (c.nextFrame()) this.collisions.delete(i);
+    });
+
     this.trees.forEach((tree, i) => {
-      this.collisions.forEach((c, i) => {
-        if (c.nextFrame()) this.collisions.delete(i);
-      });
       if (frisbee.intersectsMesh(tree)) {
         const collision = this.collisions.get(i);
         if (collision) {
@@ -89,10 +90,10 @@ export interface TreeMaterials {
   collided: Material;
 }
 
-const TREE_ANIMATION_LENGTH = 10;
+const TREE_ANIMATION_LENGTH = 20;
 const TREE_SCALE_BASE = 0.3;
 const TREE_POSITION_RANGE = 30;
-const MIN_TREE_DISTANCE = 2;
+const MIN_TREE_DISTANCE = 5;
 
 function nextTreeCoordinates(): number[] {
   const distance = Math.random() * TREE_POSITION_RANGE + MIN_TREE_DISTANCE;

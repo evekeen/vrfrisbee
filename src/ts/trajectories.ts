@@ -80,7 +80,7 @@ export function getOriginalTrajectoryAndTilt(velocityArray, frisbeeOrientation) 
   const alphaTrj = Math.atan(orientationVelocity[1] / orientationVelocity[0]);
   const trajectoryClassName = velocityLength < WEAK_THRESHOLD ? 'w' : 's';
   const trajectoryTiltName = alphaTrj > 0.2 ? 'l' : alphaTrj < -0.2 ? 'r' : 's';
-  console.log(trajectoryClassName + ' - ' + trajectoryTiltName);
+  // console.log(trajectoryClassName + ' - ' + trajectoryTiltName);
   return trajectories[trajectoryClassName + trajectoryTiltName];
 }
 

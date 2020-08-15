@@ -138,7 +138,9 @@ export const createScene = async function (engine, canvas) {
 
   scene.registerBeforeRender(() => {
     frisbees.forEach(frisbee => {
-      frisbee.computeWorldMatrix();
+      if (frisbee.position.y < -1) {
+        frisbee.dispose();
+      }
       if (frisbee.intersectsMesh(pineapple, false)) {
         if (!collision) {
           collision = true;
@@ -180,7 +182,7 @@ export const createScene = async function (engine, canvas) {
           }
         } else {
           pressed = false;
-          console.log(traceP);
+          // console.log(traceP);
           frisbee && throwFrisbee();
         }
       }

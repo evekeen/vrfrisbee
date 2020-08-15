@@ -56,6 +56,9 @@ export const createScene = async function (engine, canvas) {
     console.log("XR supported");
   }
 
+  xr.teleportation.attach();
+  xr.pointerSelection.attach();
+
   const camera = new FreeCamera("camera1", new Vector3(0, 0, -100), scene);
   camera.setTarget(new Vector3(0, 0, -1000));
   camera.attachControl(canvas, true);

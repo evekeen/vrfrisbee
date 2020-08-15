@@ -3,7 +3,6 @@ import * as cannon from 'cannon';
 import {createParticles} from "./Particles";
 import {animateFlight} from "./Flight";
 import {getTrajectory} from "./trajectories";
-import {Forest} from "./Forest";
 import {
   AssetsManager,
   Ray,
@@ -13,18 +12,18 @@ import {
   MeshBuilder,
   FreeCamera,
   Vector3,
-  HemisphericLight, StandardMaterial, PhysicsImpostor, AbstractMesh
+  HemisphericLight, StandardMaterial, AbstractMesh
 } from "babylonjs";
 
 import 'babylonjs-loaders';
+import { initForest } from './Forest';
+import {initBalls} from "./Balls";
 
-const collisionFrames = 150;
 
 const frisbeeScale = 0.00002;
 const frisbees: AbstractMesh[] = [];
 let frisbeeCounter = 0;
 
-let pineapple;
 let frisbee;
 
 const ray = Ray.Zero();
@@ -77,45 +76,14 @@ export const createScene = async function (engine, canvas) {
   groundMat.emissiveColor = new Color3(0.1, 0, 0.1);
   groundMat.ambientColor = new Color3(0.1, 0, 0.1);
   groundMat.alpha = 1;
-
-  const pMaterial = new StandardMaterial("pineapple", scene);
-  pMaterial.diffuseColor = new Color3(0, 0, 1);
-  pMaterial.specularColor = new Color3(0.5, 0.6, 0.87);
-  pMaterial.emissiveColor = new Color3(0, 0, 0);
-  pMaterial.ambientColor = new Color3(0.23, 0.98, 0.53);
-  pMaterial.alpha = 0.9;
-
-  const pMaterialExplosion = new StandardMaterial("pineapple-explosion", scene);
-  pMaterialExplosion.diffuseColor = new Color3(1, 0, 0);
-  pMaterialExplosion.specularColor = new Color3(0.5, 0.6, 0.87);
-  pMaterialExplosion.emissiveColor = new Color3(0, 0, 0);
-  pMaterialExplosion.ambientColor = new Color3(0.23, 0.98, 0.53);
-  pMaterialExplosion.alpha = 1;
-
   ground.material = groundMat;
 
   const assetsManager = new AssetsManager(scene);
   const landscapeTask = assetsManager.addMeshTask("milkyway", "", "milkyway/", "scene.gltf");
   landscapeTask.onSuccess = task => task.loadedMeshes[0];
 
-  const forest = Forest.init(assetsManager);
-
-  // const pTask = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
-  // pTask.onError = err => console.log("Cannot load scene", err);
-  // pTask.onSuccess = task => {
-  //   task.loadedMeshes.forEach(e => e.checkCollisions = true);
-  //   pineapple = task.loadedMeshes[0];
-  //   pineapple.position = new Vector3(0, 0, 25);
-  //   pineapple.scaling = new Vector3(3, 3, 3);
-  //   pineapple.checkCollisions = true;
-  //   pineapple.showBoundingBox = true;
-  // };
-
-  const TARGET_POSITION = new Vector3(0, 2, 25);
-
-  pineapple = MeshBuilder.CreateSphere("sphere", {diameter: 2}, scene);
-  pineapple.position = TARGET_POSITION;
-  pineapple.material = pMaterial;
+  const forest = initForest(assetsManager);
+  const balls = initBalls(scene);
 
   const task = assetsManager.addMeshTask("task2", "", "disc/", "scene.gltf");
   task.onError = err => console.log("Cannot load scene", err);
@@ -131,40 +99,13 @@ export const createScene = async function (engine, canvas) {
     createParticles(scene, frisbee);
   }
   assetsManager.load();
-  // createFogParticles(scene);
-
-  let collision = false;
-  let collisionFrame = 0;
 
   scene.registerBeforeRender(() => {
     frisbees.forEach(frisbee => {
       if (frisbee.position.y < -1) {
         frisbee.dispose();
       }
-      if (frisbee.intersectsMesh(pineapple, false)) {
-        if (!collision) {
-          collision = true;
-          collisionFrame = 0;
-          pineapple.material = pMaterialExplosion;
-          const scaling = 1.5;
-          pineapple.scaling = new Vector3(scaling, scaling, scaling);
-          pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
-            mass: 10,
-            restitution: 0.5
-          }, scene);
-          pineapple.physicsImpostor.applyImpulse(new Vector3(100, 10, 400), pineapple.getAbsolutePosition());
-        }
-      }
-      if (collision && collisionFrame++ > collisionFrames) {
-        collision = false;
-        pineapple.material = pMaterial;
-        pineapple.scaling = new Vector3(1, 1, 1);
-        pineapple.position = TARGET_POSITION;
-        pineapple.physicsImpostor = new PhysicsImpostor(pineapple, PhysicsImpostor.MeshImpostor, {
-          mass: 0,
-          restitution: 0.5
-        }, scene);
-      }
+      balls.then(b => b.checkCollisions(frisbee));
       forest.then(f => f.checkCollisions(frisbee));
     });
   });

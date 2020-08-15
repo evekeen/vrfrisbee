@@ -1,4 +1,5 @@
 import {AbstractMesh, Animation, Scene} from "@babylonjs/core";
+import {Trajectory} from "./trajectories";
 
 export function animateFlight(scene: Scene, frisbee: AbstractMesh, trajectory: Trajectory) {
   const {translation, rotation} = trajectory;
@@ -38,8 +39,3 @@ const playbackSpeed = 0.7;
 export const distanceConversion = 10;
 export const velocityFactor = 1.3;
 export const discretization = 10;
-
-interface Trajectory {
-  translation: number[][];
-  rotation: number[][];
-}

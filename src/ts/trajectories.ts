@@ -72,7 +72,7 @@ export const trajectories = {
   },
 };
 
-export function getOriginalTrajectoryAndTilt(velocityArray, frisbeeOrientation) {
+export function getOriginalTrajectoryAndTilt(velocityArray, frisbeeOrientation) : Trajectory {
   const absoluteOrientation = correctFrisbeeOrientation(frisbeeOrientation);
   const velocityLength = arrayLength(velocityArray);
   const velocityNormalized = normalize(velocityArray);
@@ -84,7 +84,7 @@ export function getOriginalTrajectoryAndTilt(velocityArray, frisbeeOrientation) 
   return trajectories[trajectoryClassName + trajectoryTiltName];
 }
 
-export function getTrajectory(positions, frisbeeOrientation, velocityProvider) {
+export function getTrajectory(positions, frisbeeOrientation, velocityProvider): Trajectory {
   const lastPosition = positions[positions.length - 1];
   let velocityArray = velocityProvider(positions);
   if (arrayLength(velocityArray) < 0.1) {
@@ -100,7 +100,7 @@ export function getTrajectory(positions, frisbeeOrientation, velocityProvider) {
   const rotated = rotateZTrajectory(trajectory.translation, velocityArray);
   const translation = scaleAndTranslate(rotated, arrayLength(velocityArray) * velocityFactor, controllerPositionShift);
   return {
-    translation: translation.toArray(),
+    translation: translation.toArray() as number[][],
     rotation: trajectory.rotation
   };
 }
@@ -109,4 +109,9 @@ export function correctFrisbeeOrientation(orientationVector) {
   const orientation = orientationVector.asArray();
   orientation[1] += 0.2;
   return orientation;
+}
+
+export interface Trajectory {
+  translation: number[][];
+  rotation: number[][];
 }

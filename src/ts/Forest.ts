@@ -13,13 +13,13 @@ export class Forest {
       });
       if (frisbee.intersectsMesh(tree)) {
         if (!this.collisions.has(i)) {
-          this.collisions.set(i, new Collision(tree, this.materials, 0));
+          this.collisions.set(i, new Collision(tree, this.materials.collided, 0));
         }
       }
     });
   }
 
-  static init(numberOfTrees: number, assetsManager: AssetsManager): Promise<Forest> {
+  static init(numberOfTrees: number, assetsManager: AssetsManager, materials: TreeMaterials): Promise<Forest> {
     const treeTask = assetsManager.addMeshTask('tree', '', 'pinetree/', 'tree.gltf');
     return new Promise<Forest>((resolve, reject) => {
       treeTask.onSuccess = task => {
@@ -30,12 +30,11 @@ export class Forest {
           trees.push(tree);
         }
 
-        const normal = original.material!!.clone('tree-normal')!!;
-        const collided = normal.clone('tree-collided')!!;
-        collided.alpha = 0.5;
-        original.setEnabled(false);
-
-        resolve(new Forest(trees, {normal, collided}));
+        // const normal = original.material!!.clone('tree-normal')!!;
+        // const collided = normal.clone('tree-collided')!!;
+        // collided.alpha = 0.5;
+        original.dispose();
+        resolve(new Forest(trees, materials));
       };
       treeTask.onError = err => {
         console.log("Cannot load scene", err);
@@ -54,7 +53,7 @@ export class Forest {
 }
 
 class Collision {
-  constructor(private readonly mesh: AbstractMesh, private readonly materials: TreeMaterials, private elapsed: number) {
+  constructor(private readonly mesh: AbstractMesh, private readonly collidedMaterial: Material, private elapsed: number) {
     this.start();
   }
 
@@ -67,15 +66,15 @@ class Collision {
   }
 
   private start(): void {
-    this.mesh.material = this.materials.collided;
+    this.mesh.material = this.collidedMaterial;
   }
 
   private end(): void {
-    this.mesh.material = this.materials.normal;
+    // this.mesh.material = this.materials.normal;
   }
 }
 
-interface TreeMaterials {
+export interface TreeMaterials {
   normal: Material;
   collided: Material;
 }

@@ -22,14 +22,22 @@ module.exports = (env, argv) => {
             }
           ]
         },
+        // {
+        //   test: /\.tsx?$/,
+        //   loader: "awesome-typescript-loader",
+        //   options: {
+        //     reportFiles: [
+        //       'src/ts/**/*.{ts,tsx}'
+        //     ]
+        //   },
+        // },
         {
           test: /\.tsx?$/,
-          loader: "awesome-typescript-loader",
-          options : {
-            reportFiles: [
-              'src/ts/**/*.{ts,tsx}'
-            ]
-          },
+          loader: "ts-loader",
+          exclude: /node_modules/,
+          options: {
+            transpileOnly: true
+          }
         },
         {
           test: /\.js$/,
@@ -40,7 +48,11 @@ module.exports = (env, argv) => {
     resolve: {
       extensions: ['.ts', '.tsx', '.js']
     },
-    entry: './src/ts/index.ts',
+    entry: {
+      main: [
+        './src/ts/index.ts'
+      ]
+    },
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: '[name].bundle.js'

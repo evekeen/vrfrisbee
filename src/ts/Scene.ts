@@ -16,6 +16,8 @@ import {
   HemisphericLight, StandardMaterial, PhysicsImpostor, AbstractMesh
 } from "@babylonjs/core";
 
+import '@babylonjs/loaders';
+
 const collisionFrames = 150;
 
 const frisbeeScale = 0.00002;
@@ -96,7 +98,10 @@ export const createScene = async function (engine, canvas) {
   const landscapeTask = assetsManager.addMeshTask("milkyway", "", "milkyway/", "scene.gltf");
   landscapeTask.onSuccess = task => task.loadedMeshes[0];
 
-  const forest = Forest.init(30, assetsManager);
+  const forest = Forest.init(30, assetsManager, {
+    normal: pMaterial,
+    collided: fMaterial
+  });
 
   // const pTask = assetsManager.addMeshTask("pineapple", "", "pineapple/", "scene.gltf");
   // pTask.onError = err => console.log("Cannot load scene", err);

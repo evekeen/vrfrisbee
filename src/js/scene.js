@@ -9,6 +9,9 @@ import {getTrajectory} from "./trajectories";
 
 const collisionFrames = 150;
 
+const treeScale = 0.3;
+const TREE_NUMBER = 30;
+
 const frisbeeScale = 0.00002;
 const frisbees = [];
 let frisbeeCounter = 0;
@@ -24,11 +27,15 @@ export const createScene = async function (engine, canvas) {
   scene.collisionsEnabled = true;
   const cannonPlugin = new CannonJSPlugin(true, 10, cannon);
   scene.enablePhysics(null, cannonPlugin);
-  // var env = scene.createDefaultEnvironment({enableGroundShadow: true, groundYBias: 1});
-  // env.setMainColor(BABYLON.Color3.FromHexString("#010002"))
+  const env = scene.createDefaultEnvironment({
+    enableGroundShadow: false,
+    createSkybox: false
+  });
+  env.setMainColor(BABYLON.Color3.FromHexString("#010002"));
+  const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 50, height: 50}, scene);
 
   const xr = await scene.createDefaultXRExperienceAsync({
-    // floorMeshes: [ground],
+    floorMeshes: [ground],
     uiOptions: {
       sessionMode: 'immersive-vr'
     }
@@ -44,7 +51,7 @@ export const createScene = async function (engine, canvas) {
   camera.attachControl(canvas, true);
 
   const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-  light.intensity = 0.7;
+  light.intensity = 0.3;
 
   const fMaterial = new BABYLON.StandardMaterial("frisbee", scene);
   fMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
@@ -52,6 +59,13 @@ export const createScene = async function (engine, canvas) {
   fMaterial.emissiveColor = new BABYLON.Color3(0.5, 0, 0.5);
   fMaterial.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
   fMaterial.alpha = 0.8;
+
+  const groundMat = new BABYLON.StandardMaterial("ground", scene);
+  groundMat.diffuseColor = new BABYLON.Color3.FromHexString('#010002');
+  groundMat.specularColor = new BABYLON.Color3(0.5, 0.6, 0.87);
+  groundMat.emissiveColor = new BABYLON.Color3(0.1, 0, 0.1);
+  groundMat.ambientColor = new BABYLON.Color3(0.1, 0, 0.1);
+  groundMat.alpha = 1;
 
   const pMaterial = new BABYLON.StandardMaterial("pineapple", scene);
   pMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1);
@@ -67,13 +81,22 @@ export const createScene = async function (engine, canvas) {
   pMaterialExplosion.ambientColor = new BABYLON.Color3(0.23, 0.98, 0.53);
   pMaterialExplosion.alpha = 1;
 
+  ground.material = groundMat;
+
   const assetsManager = new BABYLON.AssetsManager(scene);
-  const landscapeTask = assetsManager.addMeshTask("landscape", "", "barcelona/", "scene.gltf");
-  landscapeTask.onSuccess = task => {
-    const landscape = task.loadedMeshes[0];
-    landscape.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0);
+  const landscapeTask = assetsManager.addMeshTask("milkyway", "", "milkyway/", "scene.gltf");
+  landscapeTask.onSuccess = task => task.loadedMeshes[0];
+
+  const treeTask = assetsManager.addMeshTask("tree", "", "pinetree/", "tree.gltf");
+  treeTask.onSuccess = task => {
+    const tree = task.loadedMeshes[0];
+    setupTree(tree);
+    for (let i = 0; i < TREE_NUMBER - 1; i++) {
+      const newTree = tree.clone();
+      setupTree(newTree);
+    }
   };
-  landscapeTask.onError = err => console.log("Cannot load scene", err);
+  treeTask.onError = err => console.log("Cannot load scene", err);
 
   let pineapple;
   let frisbee;
@@ -89,8 +112,10 @@ export const createScene = async function (engine, canvas) {
   //   pineapple.showBoundingBox = true;
   // };
 
+  const TARGET_POSITION = new BABYLON.Vector3(0, 2, 25);
+
   pineapple = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2}, scene);
-  pineapple.position = new BABYLON.Vector3(0, 0, 25);
+  pineapple.position = TARGET_POSITION;
   pineapple.material = pMaterial;
 
   const task = assetsManager.addMeshTask("task2", "", "disc/", "scene.gltf");
@@ -133,7 +158,7 @@ export const createScene = async function (engine, canvas) {
         collision = false;
         pineapple.material = pMaterial;
         pineapple.scaling = new BABYLON.Vector3(1, 1, 1);
-        pineapple.position = new BABYLON.Vector3(0, 0, 25);
+        pineapple.position = TARGET_POSITION;
         pineapple.physicsImpostor = new BABYLON.PhysicsImpostor(pineapple, BABYLON.PhysicsImpostor.MeshImpostor, {
           mass: 0,
           restitution: 0.5
@@ -223,4 +248,21 @@ function cloneFrisbee(frisbee) {
   frisbees[id] = clone;
   clone.onDispose = () => delete frisbees[id];
   return clone;
+}
+
+const TREE_POSITION_RANGE = 30;
+const MIN_TREE_DISTANCE = 10;
+
+function nextTreeCoordinates() {
+  const distance = Math.random() * TREE_POSITION_RANGE + MIN_TREE_DISTANCE;
+  const angle = Math.random() * Math.PI * 2;
+  const x = Math.cos(angle) * distance;
+  const z = Math.sin(angle) * distance;
+  return [x, 0, z];
+}
+
+function setupTree(tree) {
+  tree.position = BABYLON.Vector3.FromArray(nextTreeCoordinates());
+  const scale = treeScale * (Math.random() + 1);
+  tree.scaling = new BABYLON.Vector3(scale, scale, scale);
 }

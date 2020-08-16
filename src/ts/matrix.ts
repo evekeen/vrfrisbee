@@ -1,4 +1,5 @@
 import * as math from "mathjs";
+import {Vector3} from "babylonjs";
 
 export function rotateZTrajectory(trajectory, velocityArray) {
   const [vx, vy, vz] = normalize(velocityArray);
@@ -98,4 +99,10 @@ export function normalize(array) {
   const length = arrayLength(array);
   if (length === 0) return array;
   return array.map(v => v / length);
+}
+
+export function getAngle(va: Vector3, vb: Vector3): number {
+  const angle = Math.acos(Vector3.Dot(va.normalize(), vb.normalize()));
+  const cross = Vector3.Cross(va, vb);
+  return Vector3.Dot(Vector3.Up(), cross) < 0 ? -angle : angle;
 }

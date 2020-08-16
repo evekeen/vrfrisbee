@@ -1,4 +1,4 @@
-import {AbstractMesh, AssetsManager, Material, Vector3, Color3} from "babylonjs";
+import {AbstractMesh, Material} from "babylonjs";
 
 export class CollidingCollection {
   private readonly collisions = new Map<number, Collision>();

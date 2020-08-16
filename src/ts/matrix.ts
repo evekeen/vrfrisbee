@@ -1,7 +1,7 @@
 import * as math from "mathjs";
 import {Vector3} from "babylonjs";
 
-export function rotateZTrajectory(trajectory, velocityArray) {
+export function rotateZTrajectory(trajectory: number[][], velocityArray: number[]) {
   const [vx, vy, vz] = normalize(velocityArray);
   const [xSin, xCos] = getProjectionsNormalized(-vy, vy === 0 ? 1 : Math.abs(vz));
   const xRotation = math.matrix([
@@ -45,16 +45,16 @@ function getProjectionsNormalized(sin, cos) {
   return [s / norm, c / norm];
 }
 
-export function arrayLength(point) {
+export function arrayLength(point: number[]): number {
   const [x, y, z] = point;
   return Math.sqrt(x * x + y * y + z * z);
 }
 
-export function pointToArray(point) {
+export function pointToArray(point: Point): number[] {
   return [point.x, point.y, point.z];
 }
 
-export function findLastVelocity(traceP) {
+export function findLastVelocity(traceP: Vector3[]): number[] {
   if (traceP.length < 2) return [0, 0, 1];
   const velocities = differentiate(traceP, 2);
   const indexOfMaxVelocity = velocities.length - 1;
@@ -69,14 +69,14 @@ export function findLastVelocity(traceP) {
   return pointToArray(average);
 }
 
-export function findAverageVelocity(traceP, pointNumber) {
-  if (traceP.length < 2) return [0, 0, 1];
+export function findAverageVelocity(traceP: Vector3[], pointNumber: number): Vector3 {
+  if (traceP.length < 2) return Vector3.Forward();
   const velocities = differentiate(traceP, pointNumber);
   const average = averagePoint(velocities);
-  return pointToArray(average);
+  return new Vector3(average!!.x, average!!.y, average!!.z);
 }
 
-function differentiate(traceP, pointNumber) {
+function differentiate(traceP: Vector3[], pointNumber: number): Point[] {
   const lastPoints = traceP.slice(-pointNumber);
   return lastPoints.slice(1).map((p, i) => {
     return {
@@ -87,8 +87,8 @@ function differentiate(traceP, pointNumber) {
   });
 }
 
-function averagePoint(points) {
-  return points.reduce((average, point) => average ? {
+function averagePoint(points: Point[]): Point | undefined {
+  return points.reduce((average: Point, point: Point) => average ? {
     x: average.x + point.x / 2,
     y: average.y + point.y / 2,
     z: average.z + point.z / 2
@@ -105,4 +105,10 @@ export function getAngle(va: Vector3, vb: Vector3): number {
   const angle = Math.acos(Vector3.Dot(va.normalize(), vb.normalize()));
   const cross = Vector3.Cross(va, vb);
   return Vector3.Dot(Vector3.Up(), cross) < 0 ? -angle : angle;
+}
+
+interface Point {
+  x: number;
+  y: number;
+  z: number;
 }

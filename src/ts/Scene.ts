@@ -180,7 +180,7 @@ export const createScene = async function (engine) {
       clone.isVisible = false;
       setTimeout(() => {
         clone.dispose();
-        particles.dispose();
+        particles.stop();
       }, 1000);
     };
   }

@@ -15,21 +15,14 @@ export function createParticles(scene: Scene, emitter: Vector3): ParticleSystem 
   particleSystem.minLifeTime = 1;
   particleSystem.maxLifeTime = 10;
 
-  particleSystem.emitRate = 3000;
-
-  // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+  particleSystem.emitRate = 1000;
   particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;
-
-  // Set the gravity of all particles
   particleSystem.gravity = new Vector3(5, -9.81, 0);
 
-  // Direction of each particle after it has been emitted
-  particleSystem.direction1 = new Vector3(-1, 0, -1);
-  particleSystem.direction2 = new Vector3(1, 0, 1);
-
-  // Angular speed, in radians
-  particleSystem.minAngularSpeed = 0;
-  particleSystem.maxAngularSpeed = Math.PI / 2;
+  // @ts-ignore
+  particleSystem.minEmitBox = new BABYLON.Vector3(-0.1, -0.02, -0.1);
+  // @ts-ignore
+  particleSystem.maxEmitBox = new BABYLON.Vector3(0.1, 0, 0.1);
 
   // Speed
   particleSystem.minEmitPower = 0.00000001;

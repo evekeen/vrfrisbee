@@ -208,9 +208,10 @@ function getFrisbeePosition(ray: Ray, camera: WebXRCamera) {
   const controllerPosition = ray.origin.clone();
   const headPosition = camera.position;
   const headToController = controllerPosition.subtract(headPosition);
-  const cameraDirection = getCameraDirection(camera);
-  const norm = headToController.cross(cameraDirection);
-  const toSide = cameraDirection.cross(norm).normalize().scale(scale);
+  // const cameraDirection = getCameraDirection(camera);
+  // const norm = headToController.cross(cameraDirection);
+  // const toSide = cameraDirection.cross(norm).normalize().scale(scale);
+  const toSide = headToController.normalize().scale(scale);
   toSide.y = 0;
   return controllerPosition.add(toSide);
 }

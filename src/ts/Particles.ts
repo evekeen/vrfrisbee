@@ -1,7 +1,7 @@
-import {AbstractMesh, Color4, ParticleSystem, Scene, Texture, Vector3} from "babylonjs";
+import {Color4, ParticleSystem, Scene, Texture, Vector3} from "babylonjs";
 
-export function createParticles(scene: Scene, emitter: AbstractMesh) {
-  const particleSystem = new ParticleSystem("particles", 2000, scene);
+export function createParticles(scene: Scene, emitter: Vector3): ParticleSystem {
+  const particleSystem = new ParticleSystem("particles", 20000, scene);
   particleSystem.emitter = emitter;
   particleSystem.particleTexture = new Texture("flare.png", scene);
 
@@ -12,12 +12,10 @@ export function createParticles(scene: Scene, emitter: AbstractMesh) {
   particleSystem.minSize = 0.05;
   particleSystem.maxSize = 0.1;
 
-  // Life time of each particle (random between...
-  particleSystem.minLifeTime = 0.3;
-  particleSystem.maxLifeTime = 2;
+  particleSystem.minLifeTime = 1;
+  particleSystem.maxLifeTime = 10;
 
-  // Emission rate
-  particleSystem.emitRate = 5500;
+  particleSystem.emitRate = 3000;
 
   // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
   particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;
@@ -26,18 +24,19 @@ export function createParticles(scene: Scene, emitter: AbstractMesh) {
   particleSystem.gravity = new Vector3(5, -9.81, 0);
 
   // Direction of each particle after it has been emitted
-  particleSystem.direction1 = new Vector3(-1000, -1000, -100);
-  particleSystem.direction2 = new Vector3(1000, 1000, 100);
+  particleSystem.direction1 = new Vector3(-1, 0, -1);
+  particleSystem.direction2 = new Vector3(1, 0, 1);
 
   // Angular speed, in radians
-  particleSystem.minAngularSpeed = -Math.PI;
+  particleSystem.minAngularSpeed = 0;
   particleSystem.maxAngularSpeed = Math.PI / 2;
 
   // Speed
-  particleSystem.minEmitPower = 10;
-  particleSystem.maxEmitPower = 20;
+  particleSystem.minEmitPower = 0.00000001;
+  particleSystem.maxEmitPower = 0.00000002;
   particleSystem.updateSpeed = 0.005;
 
   // Start the particle system
   particleSystem.start();
+  return particleSystem;
 }

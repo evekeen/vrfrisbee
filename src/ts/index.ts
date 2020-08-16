@@ -12,6 +12,7 @@ if (!navigator.xr) {
   throw Error('not supported');
 }
 
+// @ts-ignore
 const scenePromise = createScene(engine, canvas); //Call the createScene function
 
 engine.runRenderLoop(async function () {

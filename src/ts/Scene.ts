@@ -2,13 +2,14 @@ import {findAverageVelocity} from "./matrix";
 import * as cannon from 'cannon';
 import {createParticles} from "./Particles";
 import {animateFlight} from "./Flight";
-import {getTrajectory, getTilt} from "./trajectories";
+import {getTilt, getTrajectory} from "./trajectories";
 import {
   AbstractMesh,
   AssetsManager,
   CannonJSPlugin,
   Color3,
   HemisphericLight,
+  Matrix,
   MeshBuilder,
   Ray,
   Scene,
@@ -61,10 +62,10 @@ export const createScene = async function (engine) {
   xr.pointerSelection.attach();
 
   const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
-  light.intensity = 0.3;
+  light.intensity = 0.5;
 
   const fMaterial = new StandardMaterial("frisbee", scene);
-  fMaterial.diffuseColor = new Color3(0, 0, 0);
+  fMaterial.diffuseColor = new Color3(0.1, 0, 0.1);
   fMaterial.specularColor = new Color3(0.5, 0.6, 0.87);
   fMaterial.emissiveColor = new Color3(0.5, 0, 0.5);
   fMaterial.ambientColor = new Color3(0.23, 0.98, 0.53);
@@ -85,18 +86,15 @@ export const createScene = async function (engine) {
   const forest = initForest(assetsManager);
   const balls = initBalls(scene);
 
-  const task = assetsManager.addMeshTask("task2", "", "disc/", "scene.gltf");
+  const task = assetsManager.addMeshTask("frisbee", "", "disc/", "disc.gltf");
   task.onError = err => console.log("Cannot load scene", err);
   task.onSuccess = task => {
     frisbee = task.loadedMeshes[0];
-    frisbee.position = new Vector3(0, 1, 0);
     frisbee.rotation = new Vector3(0, 0, 0);
-    frisbee.scaling = new Vector3(FRISBEE_SCALE, FRISBEE_SCALE, FRISBEE_SCALE);
     frisbee.checkCollisions = true;
-    setFrisbeeMaterial(frisbee, fMaterial);
+    frisbee.getChildMeshes()[0].material = fMaterial;
     frisbee.setEnabled(false);
-
-    createParticles(scene, frisbee);
+    frisbee.setPivotMatrix(Matrix.Translation(-PIVOT_SHIFT.x, -PIVOT_SHIFT.y, -PIVOT_SHIFT.z), false);
   }
   assetsManager.load();
 
@@ -118,9 +116,9 @@ export const createScene = async function (engine) {
           pressed = true;
           traceP = [];
           if (frisbee) {
-            setRotationFrom(controller);
             frisbee.position = getFrisbeePosition(ray, camera);
             frisbee.setEnabled(true);
+            setRotationFrom(controller);
           }
         } else {
           pressed = false;
@@ -177,47 +175,44 @@ export const createScene = async function (engine) {
       velocity = cameraDirection.scale(0.5);
     }
     const trajectory = getTrajectory(traceP, frisbeeOrientation!!, velocity);
+    const particles = createParticles(scene, clone!!.position);
     animateFlight(scene, clone, trajectory).onAnimationEnd = () => {
       clone.isVisible = false;
-      setTimeout(() => clone.dispose(), 1000);
+      setTimeout(() => {
+        clone.dispose();
+        particles.dispose();
+      }, 1000);
     };
   }
 
   function cloneFrisbee(frisbee) {
     const clone = frisbee.clone();
-    getFrisbeeMesh(clone).checkCollisions = true;
+    clone.checkCollisions = true;
     const id = frisbeeCounter++;
     frisbees[id] = clone;
     clone.onDispose = () => delete frisbees[id];
+    clone.setPivotMatrix(Matrix.Translation(0,0,0), false);
     return clone;
   }
 
   return scene;
 };
 
-function getFrisbeeMesh(frisbee) {
-  return frisbee.getChildMeshes(false, c => c.id.indexOf('TARELKA_Mat.1_0') !== -1)[0];
-}
-
-function setFrisbeeMaterial(frisbee, material) {
-  getFrisbeeMesh(frisbee).material = material;
-}
-
 function getFrisbeePosition(ray: Ray, camera: WebXRCamera) {
-  const scale = 0.3;
-  const controllerPosition = ray.origin.clone();
-  const headPosition = camera.position;
-  const headToController = controllerPosition.subtract(headPosition);
-  // const cameraDirection = getCameraDirection(camera);
-  // const norm = headToController.cross(cameraDirection);
-  // const toSide = cameraDirection.cross(norm).normalize().scale(scale);
-  const toSide = headToController.normalize().scale(scale);
-  toSide.y = 0;
-  return controllerPosition.add(toSide);
+  return ray.origin.clone();
+  // const headPosition = camera.position;
+  // const headToController = controllerPosition.subtract(headPosition);
+  // // const cameraDirection = getCameraDirection(camera);
+  // // const norm = headToController.cross(cameraDirection);
+  // // const toSide = cameraDirection.cross(norm).normalize().scale(scale);
+  // const toSide = headToController.normalize().scale(FRISBEE_PIVOT_SHIFT);
+  // toSide.y = 0;
+  // return controllerPosition.add(toSide);
 }
 
 function getCameraDirection(camera: WebXRCamera): Vector3 {
   return camera.getTarget().subtract(camera.position).normalize();
 }
 
-const FRISBEE_SCALE = 0.00002;
+const FRISBEE_PIVOT_SHIFT = 0.15;
+const PIVOT_SHIFT = new Vector3(0, 0, FRISBEE_PIVOT_SHIFT);

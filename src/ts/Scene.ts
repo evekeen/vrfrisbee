@@ -1,4 +1,4 @@
-import {findAverageVelocity} from "./matrix";
+import {average} from "./matrix";
 import * as cannon from 'cannon';
 import {createParticles} from "./Particles";
 import {animateFlight} from "./Flight";
@@ -15,22 +15,25 @@ import {
   Scene,
   StandardMaterial,
   Vector3,
-  WebXRInputSource
+  WebXRInputSource,
+  Engine
 } from "babylonjs";
 
 import 'babylonjs-loaders';
 import {initForest} from './Forest';
 import {initBalls} from "./Balls";
 import {WebXRCamera} from "babylonjs/XR/webXRCamera";
+import {WebXRControllerComponent} from "babylonjs/XR/motionController/webXRControllerComponent";
 
-export const createScene = async function (engine) {
+export const createScene = async function (engine: Engine) {
   const frisbees: AbstractMesh[] = [];
   let frisbeeCounter = 0;
   let frisbee: AbstractMesh | undefined;
 
   const ray = Ray.Zero();
-  let pressed = false;
+  let grabbed = false;
   let traceP: Vector3[] = [];
+  let velocities: Vector3[] = [];
   let frisbeeOrientation: Vector3 | undefined = undefined;
 
 
@@ -108,20 +111,21 @@ export const createScene = async function (engine) {
     });
   });
 
-  function listenToComponent(component, controller) {
+  function listenToComponent(component: WebXRControllerComponent, controller) {
     component && component.onButtonStateChangedObservable.add(() => {
-      if (component.changes.pressed) {
+      if (component.changes.value) {
         const camera = xr.baseExperience.camera;
-        if (component.pressed) {
-          pressed = true;
+        const pressure = component.value;
+        if (pressure > GRAB_THRESHOLD) {
+          grabbed = true;
           traceP = [];
           if (frisbee) {
             frisbee.position = getFrisbeePosition(ray, camera);
-            frisbee.setEnabled(true);
             setRotationFrom(controller);
+            frisbee.setEnabled(true);
           }
-        } else {
-          pressed = false;
+        } else if (pressure < RELEASE_THRESHOLD) {
+          grabbed = false;
           const cameraDirection = getCameraDirection(camera);
           frisbee && throwFrisbee(cameraDirection);
         }
@@ -140,16 +144,18 @@ export const createScene = async function (engine) {
 
       const frameObserver = xr.baseExperience.sessionManager.onXRFrameObservable.add(() => {
         controller.getWorldPointerRayToRef(ray, true);
-        if (frisbee && pressed) {
+        if (frisbee && grabbed) {
           const position = getFrisbeePosition(ray, xr.baseExperience.camera);
+          const prevPosition = traceP.length ? traceP[traceP.length - 1] : undefined;
+          if (prevPosition) {
+            const ratio = 1 / engine.getDeltaTime() * 1000;
+            const vector = position.subtract(prevPosition);
+            const velocity = vector.multiplyByFloats(ratio, ratio, ratio);
+            velocities.push(velocity);
+          }
           traceP.push(position);
           frisbee.position = position;
           setRotationFrom(controller);
-          const tilt = getTilt(getCameraDirection(xr.baseExperience.camera), frisbeeOrientation!!);
-          if (t !== tilt) {
-            console.log(tilt);
-          }
-          t = tilt;
         }
       });
 
@@ -167,12 +173,12 @@ export const createScene = async function (engine) {
   }
 
   function throwFrisbee(cameraDirection: Vector3): void {
-    if (traceP.length <= 1) return;
+    if (velocities.length === 0) return;
     const clone = cloneFrisbee(frisbee);
     frisbee!!.setEnabled(false);
-    let velocity = findAverageVelocity(traceP, 3);
+    let velocity = average(velocities.slice(-3));
     if (velocity.length() === 0) {
-      velocity = cameraDirection.scale(0.5);
+      velocity = cameraDirection.scale(2);
     }
     const trajectory = getTrajectory(traceP, frisbeeOrientation!!, velocity);
     const particles = createParticles(scene, clone!!.position);
@@ -191,7 +197,8 @@ export const createScene = async function (engine) {
     const id = frisbeeCounter++;
     frisbees[id] = clone;
     clone.onDispose = () => delete frisbees[id];
-    clone.setPivotMatrix(Matrix.Translation(0,0,0), false);
+    // TODO translate clone on frisbee.pivot
+    clone.setPivotMatrix(Matrix.Translation(0, 0, 0), false);
     return clone;
   }
 
@@ -216,3 +223,6 @@ function getCameraDirection(camera: WebXRCamera): Vector3 {
 
 const FRISBEE_PIVOT_SHIFT = 0.15;
 const PIVOT_SHIFT = new Vector3(0, 0, FRISBEE_PIVOT_SHIFT);
+
+const GRAB_THRESHOLD = 0.9;
+const RELEASE_THRESHOLD = 0.8;

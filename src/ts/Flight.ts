@@ -15,27 +15,27 @@ export function animateFlight(scene: Scene, frisbee: AbstractMesh, trajectory: T
   xRot.setKeys(toRotationFrames(rotation[0]));
   yRot.setKeys(toRotationFrames(rotation[1]));
   zRot.setKeys(toRotationFrames(rotation[2]));
-  return scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 2 * frameRate / discretization / playbackSpeed, false);
+  return scene.beginDirectAnimation(frisbee, [xSlide, zSlide, ySlide, xRot, zRot], 0, originalMaxTime / playbackSpeed * frameRate - 2 * frameRate / DISCRETIZATION / playbackSpeed, false);
 }
 
 function toPositionFrames(points: number[], bias?: number): any[] {
   const b = bias || 0;
   return points.map((p, i) => ({
-    frame: i * frameRate / discretization / playbackSpeed,
-    value: p * distanceConversion + b
+    frame: i * frameRate / DISCRETIZATION / playbackSpeed,
+    value: p * DISTANCE_CONVERSION + b
   }));
 }
 
 function toRotationFrames(points: number[]): any[] {
   return points.map((p, i) => ({
-    frame: i * frameRate / discretization / playbackSpeed,
+    frame: i * frameRate / DISCRETIZATION / playbackSpeed,
     value: p
   }));
 }
 
 const frameRate = 30;
 const originalMaxTime = 5;
-const playbackSpeed = 0.7;
-export const distanceConversion = 10;
-export const velocityFactor = 1.3;
-export const discretization = 10;
+const playbackSpeed = 1;
+export const DISTANCE_CONVERSION = 4;
+export const DISCRETIZATION = 10;
+export const RECORDED_VELOCITY = 10; // m/s

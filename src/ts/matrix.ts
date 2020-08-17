@@ -54,45 +54,19 @@ export function pointToArray(point: Point): number[] {
   return [point.x, point.y, point.z];
 }
 
-export function findLastVelocity(traceP: Vector3[]): number[] {
-  if (traceP.length < 2) return [0, 0, 1];
-  const velocities = differentiate(traceP, 2);
-  const indexOfMaxVelocity = velocities.length - 1;
-  let average;
-  if (indexOfMaxVelocity === 0) {
-    average = averagePoint(velocities.slice(indexOfMaxVelocity, indexOfMaxVelocity + 1));
-  } else if (indexOfMaxVelocity === velocities.length - 1) {
-    average = averagePoint(velocities.slice(indexOfMaxVelocity - 1, indexOfMaxVelocity));
-  } else {
-    average = averagePoint(velocities.slice(indexOfMaxVelocity - 1, indexOfMaxVelocity + 1));
-  }
-  return pointToArray(average);
-}
-
-export function findAverageVelocity(traceP: Vector3[], pointNumber: number): Vector3 {
-  if (traceP.length < 2) return Vector3.Forward();
-  const velocities = differentiate(traceP, pointNumber);
+export function average(velocities: Vector3[]): Vector3 {
+  if (velocities.length === 0) return Vector3.Forward();
   const average = averagePoint(velocities);
   return new Vector3(average!!.x, average!!.y, average!!.z);
 }
 
-function differentiate(traceP: Vector3[], pointNumber: number): Point[] {
-  const lastPoints = traceP.slice(-pointNumber);
-  return lastPoints.slice(1).map((p, i) => {
-    return {
-      x: p.x - lastPoints[i].x,
-      y: p.y - lastPoints[i].y,
-      z: p.z - lastPoints[i].z
-    };
-  });
-}
-
-function averagePoint(points: Point[]): Point | undefined {
-  return points.reduce((average: Point, point: Point) => average ? {
-    x: average.x + point.x / 2,
-    y: average.y + point.y / 2,
-    z: average.z + point.z / 2
-  } : point, undefined);
+function averagePoint(points: Point[]): Point {
+  const sum = points.reduce((average: Point, point: Point) => average ? {
+    x: average.x + point.x,
+    y: average.y + point.y,
+    z: average.z + point.z
+  } : point, undefined) as Point;
+  return {x: sum.x / points.length, y: sum.y / points.length, z: sum.z / points.length};
 }
 
 export function normalize(array) {

@@ -1,5 +1,5 @@
 import {rotateZTrajectory, scaleAndTranslate} from "./matrix";
-import {distanceConversion, velocityFactor} from "./Flight";
+import {DISTANCE_CONVERSION, RECORDED_VELOCITY} from "./Flight";
 import {Vector2, Vector3} from "babylonjs";
 
 export const trajectories = {
@@ -89,10 +89,10 @@ export function getOriginalTrajectoryAndTilt(velocity: Vector3, frisbeeOrientati
 
 export function getTrajectory(positions: Vector3[], frisbeeOrientation: Vector3, velocity: Vector3): Trajectory {
   const lastPosition = positions[positions.length - 1];
-  const controllerPositionShift = lastPosition.asArray().map(p => p / distanceConversion);
+  const controllerPositionShift = lastPosition.asArray().map(p => p / DISTANCE_CONVERSION);
   const trajectory = getOriginalTrajectoryAndTilt(velocity, frisbeeOrientation);
   const rotated = rotateZTrajectory(trajectory.translation, velocity.asArray());
-  const translation = scaleAndTranslate(rotated, velocity.length() * velocityFactor, controllerPositionShift);
+  const translation = scaleAndTranslate(rotated, velocity.length() / RECORDED_VELOCITY, controllerPositionShift);
   return {
     translation: translation.toArray() as number[][],
     rotation: trajectory.rotation

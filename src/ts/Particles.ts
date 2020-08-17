@@ -1,7 +1,7 @@
 import {Color4, ParticleSystem, Scene, Texture, Vector3} from "babylonjs";
 
 export function createParticles(scene: Scene, emitter: Vector3): ParticleSystem {
-  const particleSystem = new ParticleSystem("particles", 20000, scene);
+  const particleSystem = new ParticleSystem("particles", 2000, scene);
   particleSystem.emitter = emitter;
   particleSystem.particleTexture = new Texture("flare.png", scene);
 
@@ -13,9 +13,9 @@ export function createParticles(scene: Scene, emitter: Vector3): ParticleSystem 
   particleSystem.maxSize = 0.1;
 
   particleSystem.minLifeTime = 1;
-  particleSystem.maxLifeTime = 10;
+  particleSystem.maxLifeTime = 5;
 
-  particleSystem.emitRate = 1000;
+  particleSystem.emitRate = 200;
   particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;
   particleSystem.gravity = new Vector3(5, -9.81, 0);
 

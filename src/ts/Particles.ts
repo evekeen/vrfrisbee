@@ -12,8 +12,8 @@ export function createParticles(scene: Scene, emitter: Vector3): ParticleSystem 
   particleSystem.minSize = 0.05;
   particleSystem.maxSize = 0.1;
 
-  particleSystem.minLifeTime = 1;
-  particleSystem.maxLifeTime = 5;
+  particleSystem.minLifeTime = 0.1;
+  particleSystem.maxLifeTime = 1;
 
   particleSystem.emitRate = 200;
   particleSystem.blendMode = ParticleSystem.BLENDMODE_ONEONE;

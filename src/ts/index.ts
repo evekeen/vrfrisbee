@@ -1,11 +1,16 @@
 import {createScene} from './Scene';
 import {Engine} from 'babylonjs'
+import WebXRPolyfill from 'webxr-polyfill';
 
 const canvas = document.getElementById("renderCanvas"); // Get the canvas element
 // @ts-ignore
 const engine = new Engine(canvas, true); // Generate the BABYLON 3D engine
 
-// let polyfill = new WebXRPolyfill();
+// @ts-ignore
+if (!navigator.xr) {
+  console.log('Enabling WebXR polyfill');
+  new WebXRPolyfill();
+}
 // @ts-ignore
 if (!navigator.xr) {
   alert('no xr');

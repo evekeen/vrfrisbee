@@ -5,7 +5,7 @@ It runs in browser using WebXR (BabylonJS).
 
 Right now in order to use it you must have any VR headset with controllers like Oculus Quest.
 There might be version to use without VR headset in future.
-
+![](frisbee.gif)
 
 ## Build: 
 ```
